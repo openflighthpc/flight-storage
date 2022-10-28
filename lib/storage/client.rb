@@ -25,6 +25,8 @@
 # https://github.com/openflighthpc/flight-storage
 #==============================================================================
 
+require_relative 'providers/aws_client'
+
 module Storage
   class Client
     ACTIONS = %w(list push pull delete)
@@ -37,7 +39,13 @@ module Storage
     end
 
     def initialize(provider:)
+      raise "Invalid provider" if !valid_provider(provider)
+    end
 
+    private
+
+    def self.valid_provider?(provider)
+      PROVIDERS.include?(provider)
     end
   end
 end
