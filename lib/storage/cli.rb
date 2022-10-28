@@ -25,6 +25,7 @@
 # https://github.com/openflighthpc/flight-storage
 #==============================================================================
 require_relative 'commands'
+require_relative 'errors'
 require_relative 'version'
 
 require 'tty/reader'

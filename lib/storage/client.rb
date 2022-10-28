@@ -24,7 +24,20 @@
 # For more information on Flight Storage, please visit:
 # https://github.com/openflighthpc/flight-storage
 #==============================================================================
+
 module Storage
-  StorageError = Class.new(RuntimeError)
-  AbstractMethodError = Class.new(StandardError)
+  class Client
+    ACTIONS = %w(list push pull delete)
+    PROVIDERS = %w( aws )
+
+    ACTIONS.each do |action|
+      define_method(action) do |*args, **kwargs|
+        raise AbstractMethodError.new "Action not defined for provider"
+      end
+    end
+
+    def initialize(provider:)
+
+    end
+  end
 end
