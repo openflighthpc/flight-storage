@@ -26,6 +26,9 @@
 #==============================================================================
 require 'ostruct'
 
+require_relative 'client'
+require_relative 'config'
+
 module Storage
   class Command
     attr_accessor :args, :options
@@ -42,6 +45,16 @@ module Storage
 
     def run
       raise NotImplementedError
+    end
+
+    private
+
+    def provider
+      @provider ||= Config.data.fetch(:provider).downcase
+    end
+
+    def client
+      @client ||= Client.new(provider: provider)
     end
   end
 end
