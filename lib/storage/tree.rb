@@ -29,9 +29,13 @@ module Storage
     def fileExists?(path)
       names = path.split("/").reject { |f| f.empty? }
       cur = self
-      names[0..-2].each do |name|
+      
+      # Navigate all directories
+      names[0..-2].each do |name| 
         cur = cur.subtree(name)
       end
+      
+      # Check for file in last directory
       cur.tree[cur.tree.keys[0]].filter{|item| item.class == String}.each do |file|
         if file == names[-1]
           return true
