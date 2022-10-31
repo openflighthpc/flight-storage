@@ -24,7 +24,16 @@
 # For more information on Flight Storage, please visit:
 # https://github.com/openflighthpc/flight-storage
 #==============================================================================
+
+require_relative '../client'
+
 module Storage
-  StorageError = Class.new(RuntimeError)
-  AbstractMethodError = Class.new(StandardError)
+  class ExampleClient < Client
+    def self.creds_schema
+      {
+        required_key: String,
+        timestamp: Integer
+      }
+    end
+  end
 end

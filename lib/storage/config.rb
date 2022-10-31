@@ -85,6 +85,15 @@ module Storage
         @root ||= File.expand_path(File.join(__dir__, '..', '..'))
       end
 
+      def provider
+        data.fetch(:provider).downcase.to_sym
+      end
+
+      def provider_credentials
+        # TODO: come up with a safe way to fetch credentials
+        Hash.new
+      end
+
       private
       def xdg_config
         @xdg_config ||= XDG::Config.new

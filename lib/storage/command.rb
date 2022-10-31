@@ -26,6 +26,9 @@
 #==============================================================================
 require 'ostruct'
 
+require_relative 'client_factory'
+require_relative 'config'
+
 module Storage
   class Command
     attr_accessor :args, :options
@@ -42,6 +45,14 @@ module Storage
 
     def run
       raise NotImplementedError
+    end
+
+    private
+
+    def client
+      provider = Config.provider
+      creds = Config.provider_credentials
+      @client ||= ClientFactory.for(provider, credentials: creds)
     end
   end
 end

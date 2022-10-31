@@ -19,12 +19,27 @@
 # You should have received a copy of the Eclipse Public License 2.0
 # along with Flight Storage. If not, see:
 #
-#  https://opensource.org/licenses/EPL-2.0
-#
 # For more information on Flight Storage, please visit:
 # https://github.com/openflighthpc/flight-storage
 #==============================================================================
+
+require_relative 'providers/example'
+
 module Storage
-  StorageError = Class.new(RuntimeError)
-  AbstractMethodError = Class.new(StandardError)
+  class ClientFactory
+    PROVIDERS = { 
+      example: ExampleClient
+    }
+
+    def self.for(provider, credentials: {})
+      raise "Invalid provider type" unless valid_provider?(provider)
+      (PROVIDERS[provider]).new(credentials: credentials)
+    end
+
+    private
+
+    def self.valid_provider?(provider)
+      PROVIDERS.include?(provider)
+    end
+  end
 end

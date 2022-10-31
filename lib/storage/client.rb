@@ -24,7 +24,39 @@
 # For more information on Flight Storage, please visit:
 # https://github.com/openflighthpc/flight-storage
 #==============================================================================
+
 module Storage
-  StorageError = Class.new(RuntimeError)
-  AbstractMethodError = Class.new(StandardError)
+  class Client
+    ACTIONS = %w(list push pull delete)
+
+    ACTIONS.each do |action|
+      define_method(action) do |*args, **kwargs|
+        raise AbstractMethodError.new "Action not defined for provider"
+      end
+    end
+
+    def self.creds_schema
+      Hash.new
+    end
+
+    attr_reader :credentials
+
+    def initialize(credentials: {})
+      raise "Invalid credentials" unless validate_credentials(credentials)
+      @credentials = credentials
+    end
+
+    private
+
+    def validate_credentials(hash)
+      hash.has_shape?(self.class.creds_schema)
+    end
+  end
+end
+
+class Hash
+  def has_shape?(shape)
+    # Currently only supports single level hashes
+    (shape.keys - self.keys).empty? && all? { |k, v| shape[k] === v }
+  end
 end
