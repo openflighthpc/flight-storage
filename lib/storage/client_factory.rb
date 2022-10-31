@@ -19,26 +19,27 @@
 # You should have received a copy of the Eclipse Public License 2.0
 # along with Flight Storage. If not, see:
 #
-#  https://opensource.org/licenses/EPL-2.0
-#
 # For more information on Flight Storage, please visit:
 # https://github.com/openflighthpc/flight-storage
 #==============================================================================
 
-module Storage
-  class Client
-    ACTIONS = %w(list push pull delete)
+require_relative 'providers/example'
 
-    ACTIONS.each do |action|
-      define_method(action) do |*args, **kwargs|
-        raise AbstractMethodError.new "Action not defined for provider"
-      end
+module Storage
+  class ClientFactory
+    PROVIDERS = { 
+      example: ExampleClient
+    }
+
+    def self.for(provider, credentials: {})
+      raise "Invalid provider type" unless valid_provider?(provider)
+      (PROVIDERS[provider]).new(credentials: credentials)
     end
 
-    attr_reader :credentials
+    private
 
-    def initialize(credentials: {})
-      @credentials = credentials
+    def self.valid_provider?(provider)
+      PROVIDERS.include?(provider)
     end
   end
 end

@@ -25,20 +25,10 @@
 # https://github.com/openflighthpc/flight-storage
 #==============================================================================
 
+require_relative '../client'
+
 module Storage
-  class Client
-    ACTIONS = %w(list push pull delete)
+  class ExampleClient < Client
 
-    ACTIONS.each do |action|
-      define_method(action) do |*args, **kwargs|
-        raise AbstractMethodError.new "Action not defined for provider"
-      end
-    end
-
-    attr_reader :credentials
-
-    def initialize(credentials: {})
-      @credentials = credentials
-    end
   end
 end
