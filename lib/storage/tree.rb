@@ -2,19 +2,14 @@ require "tty-tree"
 
 module Storage
   class Tree
+    attr_reader :name, :children
+  
     def initialize(name, children)
       @name = name
       @children = children
     end
     
-    def name
-      @name
-    end
-    
-    def children
-      @children
-    end
-    
+    # Convert to a format tty-tree can render properly
     def toTTY
       tty_children = []
       @children.each do |child|
@@ -47,7 +42,7 @@ module Storage
       self.exists?(names[0..-2], names.last)
     end
     
-    # Don't call this externally
+    # Don't call this externally, used alongside fileExists?
     def exists?(dirs, file)
       if dirs.empty?
         return @children.filter{|c| c.class == String}.include? file
