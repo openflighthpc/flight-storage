@@ -29,6 +29,11 @@ require_relative '../client'
 
 module Storage
   class ExampleClient < Client
-
+    def self.creds_schema
+      {
+        required_key: String,
+        timestamp: Integer
+      }
+    end
   end
 end
