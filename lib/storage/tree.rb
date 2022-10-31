@@ -1,25 +1,41 @@
 require "tty-tree"
 
-# All directories contain an array of their contents
 module Storage
   class Tree
-    def initialize(tree)
-      @tree = tree
+    def initialize(name, children)
+      @name = name
+      @children = children
     end
     
-    def tree
-      @tree
+    def name
+      @name
+    end
+    
+    def children
+      @children
+    end
+    
+    def toTTY
+      tty_children = []
+      @children.each do |child|
+        if child.class == String
+          tty_children << child
+        else
+          tty_children << child.toTTY
+        end
+      end
+      return { @name => tty_children }
     end
     
     def show
-      TTY::Tree[@tree].render()
+      TTY::Tree[self.toTTY].render()
     end
     
     # Given the name of a directory in this tree, return a tree rooted at that directory
     def subtree(dir)
-      @tree[@tree.keys[0]].filter{|item| item.class == Hash}.each do |hash|
-        if hash.keys[0].to_s == dir
-          return Tree.new(hash)
+      @children.each do |tree|
+        if tree.name == dir
+          return tree
         end
       end
       raise "The directory '#{dir}' could not be found"
@@ -28,20 +44,16 @@ module Storage
     # Takes a path to a file and returns whether it exists in this tree
     def fileExists?(path)
       names = path.split("/").reject { |f| f.empty? }
-      cur = self
-      
-      # Navigate all directories
-      names[0..-2].each do |name| 
-        cur = cur.subtree(name)
+      self.exists?(names[0..-2], names.last)
+    end
+    
+    # Don't call this externally
+    def exists?(dirs, file)
+      if dirs.empty?
+        return @children.filter{|c| c.class == String}.include? file
+      else
+        return self.subtree(dirs.first).exists?(dirs[1..-1], file)
       end
-      
-      # Check for file in last directory
-      cur.tree[cur.tree.keys[0]].filter{|item| item.class == String}.each do |file|
-        if file == names[-1]
-          return true
-        end
-      end
-      return false
     end
   end
 end
