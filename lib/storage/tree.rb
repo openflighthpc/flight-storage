@@ -30,7 +30,17 @@ module Storage
   
     def initialize(name, children)
       @name = name
-      @children = children
+      @children = [].tap do |a|
+        children.each do |child|
+          if child.is_a?(String)
+            a << child
+          elsif child.is_a?(Hash)
+            child.each do |k, v|
+              a << Tree.new(k.to_s, v)
+            end
+          end
+        end
+      end
     end
     
     # Convert to a hash format that tty-tree can render properly
