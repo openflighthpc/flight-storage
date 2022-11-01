@@ -27,13 +27,13 @@ require_relative 'providers/example'
 
 module Storage
   class ClientFactory
-    PROVIDERS = { 
-      example: ExampleClient
+    PROVIDERS = {
+      example: { klass: ExampleClient, friendly_name: "Example" }
     }
 
     def self.for(provider, credentials: {})
       raise "Invalid provider type" unless valid_provider?(provider)
-      (PROVIDERS[provider]).new(credentials: credentials)
+      (PROVIDERS[provider][:klass]).new(credentials: credentials)
     end
 
     private

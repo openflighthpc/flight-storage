@@ -24,32 +24,34 @@
 # For more information on Flight Storage, please visit:
 # https://github.com/openflighthpc/flight-storage
 #==============================================================================
-require_relative 'commands/configure'
-require_relative 'commands/hello'
+require 'tty-prompt'
+
+require_relative '../client_factory'
+require_relative '../command'
 
 module Storage
   module Commands
-    class << self
-      def method_missing(s, *a, &b)
-        if clazz = to_class(s)
-          clazz.new(*a).run!
-        else
-          raise 'command not defined'
-        end
-      end
+    class Configure < Command
+      def run
+        provider = prompt.select(
+          "Select your desired cloud provider:",
+          choices
+        )
 
-      def respond_to_missing?(s)
-        !!to_class(s)
+        Config.data.set(:provider, value: provider)
+        Config.save_data
       end
 
       private
-      def to_class(s)
-        s.to_s.split('-').reduce(self) do |clazz, p|
-          p.gsub!(/_(.)/) {|a| a[1].upcase}
-          clazz.const_get(p[0].upcase + p[1..-1])
+
+      def choices
+        ClientFactory::PROVIDERS.map do |k, v|
+          { v[:friendly_name] => k.to_s }
         end
-      rescue NameError
-        nil
+      end
+
+      def prompt
+        @prompt ||= TTY::Prompt.new(help_color: :yellow)
       end
     end
   end

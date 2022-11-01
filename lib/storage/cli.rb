@@ -77,5 +77,11 @@ Say hello.
 EOF
     end
     alias_command :h, :hello
+
+    command :configure do |c|
+      cli_syntax(c)
+      c.summary = 'Set cloud storage provider'
+      c.action Commands, :configure
+    end
   end
 end
