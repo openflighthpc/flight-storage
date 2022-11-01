@@ -86,26 +86,33 @@ module Storage
         @root ||= File.expand_path(File.join(__dir__, '..', '..'))
       end
 
-      def provider
-        data.fetch(:provider).downcase.to_sym
-      end
-
-      def provider_credentials
-        creds_file = File.join(credentials_path, "#{provider.to_s}.yml")
-        FileUtils.mkdir_p(credentials_path) unless File.directory?(credentials_path)
-        FileUtils.touch(creds_file) unless File.file?(creds_file)
-
-        YAML.load_file(creds_file)
-      end
-
       def storage_path
         @storage_path ||= Pathname.new('flight/storage')
       end
 
-      def credentials_path
+      def provider
+        data.fetch(:provider).downcase.to_sym
+      end
+
+      def credentials
+        FileUtils.touch(credentials_file)
+
+        YAML.load_file(credentials_file)
+      end
+
+      def credentials_file
+        file = File.join(credentials_dir, "#{provider.to_s}.yml")
+        FileUtils.touch(file)
+
+        @credentials_file ||= file
+      end
+
+      def credentials_dir
         # Expands to $HOME/.config/flight/credentials
-        @credentials_path ||=
-          storage_path.join('credentials').expand_path(xdg_config.home)
+        dir = storage_path.join('credentials').expand_path(xdg_config.home)
+        FileUtils.mkdir_p(dir)
+
+        @credentials_dir ||= dir
       end
 
       private

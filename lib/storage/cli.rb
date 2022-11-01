@@ -83,5 +83,11 @@ EOF
       c.summary = 'Set cloud storage provider'
       c.action Commands, :configure
     end
+
+    command :set do |c|
+      cli_syntax(c)
+      c.summary = 'Set credentials for chosen cloud storage provider'
+      c.action Commands, :set
+    end
   end
 end

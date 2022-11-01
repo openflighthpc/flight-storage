@@ -24,33 +24,48 @@
 # For more information on Flight Storage, please visit:
 # https://github.com/openflighthpc/flight-storage
 #==============================================================================
-require_relative 'commands/configure'
-require_relative 'commands/hello'
-require_relative 'commands/set'
+require 'tty-prompt'
+require 'yaml'
+
+require_relative '../client_factory'
+require_relative '../command'
 
 module Storage
   module Commands
-    class << self
-      def method_missing(s, *a, &b)
-        if clazz = to_class(s)
-          clazz.new(*a).run!
-        else
-          raise 'command not defined'
+    class Set < Command
+      def run
+        klass = ClientFactory::PROVIDERS[Config.provider][:klass]
+        questions = to_questions(klass)
+        answers = prompt.collect do
+          questions.each do |question|
+            key(question[:key]).ask(question[:text])
+          end
         end
-      end
 
-      def respond_to_missing?(s)
-        !!to_class(s)
+        if save_credentials(answers)
+          puts "Credentials saved to #{Config.credentials_dir}/"
+        end
       end
 
       private
-      def to_class(s)
-        s.to_s.split('-').reduce(self) do |clazz, p|
-          p.gsub!(/_(.)/) {|a| a[1].upcase}
-          clazz.const_get(p[0].upcase + p[1..-1])
+
+      def save_credentials(credentials_hash)
+        File.write(Config.credentials_file, YAML.dump(credentials_hash))
+      end
+
+      def to_questions(klass)
+        klass.creds_schema.map do |k, v|
+          friendly = k.to_s.gsub('_', ' ').capitalize
+          text = "#{friendly}:"
+          {
+            key: k,
+            text: text
+          }
         end
-      rescue NameError
-        nil
+      end
+
+      def prompt
+        @prompt ||= TTY::Prompt.new(help_color: :yellow)
       end
     end
   end
