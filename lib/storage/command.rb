@@ -52,7 +52,7 @@ module Storage
     def client
       provider = Config.provider
       creds = Config.credentials
-      @client ||= ClientFactory.for(provider, credentials: creds)
+      @client ||= ClientFactory.for(provider, creds)
     end
   end
 end
