@@ -33,21 +33,21 @@ module Storage
       @children = children
     end
     
-    # Convert to a format tty-tree can render properly
-    def toTTY
-      tty_children = []
+    # Convert to a hash format that tty-tree can render properly
+    def to_hash
+      hash_children = []
       @children.each do |child|
         if child.class == String
-          tty_children << child
+          hash_children << child
         else
-          tty_children << child.toTTY
+          hash_children << child.to_hash
         end
       end
-      return { @name => tty_children }
+      return { @name => hash_children }
     end
     
     def show
-      TTY::Tree[self.toTTY].render()
+      TTY::Tree[self.to_hash].render()
     end
     
     # Given the name of a directory in this tree, return a tree rooted at that directory
@@ -61,12 +61,13 @@ module Storage
     end
     
     # Takes a path to a file and returns whether it exists in this tree
-    def fileExists?(path)
+    def file_exists?(path)
       names = path.split("/").reject { |f| f.empty? }
       self.exists?(names[0..-2], names.last)
     end
     
-    # Don't call this externally, used alongside fileExists?
+    protected
+    
     def exists?(dirs, file)
       if dirs.empty?
         return @children.filter{|c| c.class == String}.include? file
