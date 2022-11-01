@@ -27,7 +27,7 @@ require "tty-tree"
 module Storage
   class Tree
     attr_reader :name, :children
-  
+    
     def initialize(name, children)
       @name = name
       @children = [].tap do |a|
@@ -68,14 +68,14 @@ module Storage
 
       if !subdir
         # No such subdirectory
-        raise "The directory '#{File.join(*arr)}' could not be found"
-      elsif iter + 1 == arr.length
+        raise "The directory '#{File.join(*path)}' could not be found"
+      elsif iter + 1 == path.length
         # Base case
         return subdir
       else
         # Continue with recursive indexing
         iter += 1
-        subdir.dig(*arr, iter: iter)
+        subdir.dig(*path, iter: iter)
       end
     end
     
@@ -92,7 +92,13 @@ module Storage
     # Takes a path to a file and returns whether it exists in this tree
     def file_exists?(path)
       names = path.split("/").reject(&:empty?)
-      self.exists?(names[0..-2], names.last)
+      puts names.inspect
+      self.dig(*names[0..-2]).children.filter { |c| c.class == String } .each do |file|
+        if file == names[-1]
+          return true
+        end
+      end
+      return false
     end
     
     protected
