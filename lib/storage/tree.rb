@@ -62,7 +62,7 @@ module Storage
     
     # Given the name of a directory in this tree, return a tree rooted at that directory
     def subtree(dir)
-      @children.each do |tree|
+      @children.filter { |c| c.class == Tree }.each do |tree|
         if tree.name == dir
           return tree
         end
