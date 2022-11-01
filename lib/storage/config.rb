@@ -27,6 +27,7 @@
 require 'xdg'
 require 'tty-config'
 require 'fileutils'
+require 'yaml'
 
 module Storage
   module Config
@@ -90,11 +91,25 @@ module Storage
       end
 
       def provider_credentials
-        # TODO: come up with a safe way to fetch credentials
-        Hash.new
+        creds_file = File.join(credentials_path, "#{provider.to_s}.yml")
+        FileUtils.mkdir_p(credentials_path) unless File.directory?(credentials_path)
+        FileUtils.touch(creds_file) unless File.file?(creds_file)
+
+        YAML.load_file(creds_file)
+      end
+
+      def storage_path
+        @storage_path ||= Pathname.new('flight/storage')
+      end
+
+      def credentials_path
+        # Expands to $HOME/.config/flight/credentials
+        @credentials_path ||=
+          storage_path.join('credentials').expand_path(xdg_config.home)
       end
 
       private
+
       def xdg_config
         @xdg_config ||= XDG::Config.new
       end
