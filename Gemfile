@@ -32,3 +32,6 @@ gem 'tty-prompt'
 gem 'tty-config'
 gem 'tty-tree'
 gem 'xdg', git: 'https://github.com/bkuhlmann/xdg', tag: '3.0.2'
+
+# Azure provider gems
+gem 'azure-storage-file'
