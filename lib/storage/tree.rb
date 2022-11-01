@@ -64,6 +64,11 @@ module Storage
     # Accepts as many arguments as its given, squashed into a single array named *path
     # Recursively indexes children to find subdirectory at given path
     def dig(*path, iter: 0)
+      # If path has length of zer, return top-level tree
+      if path.length == 0
+        return self
+      end
+
       subdir = @children.find { |c| c.is_a?(Tree) && c.name == path[iter] }
 
       if !subdir
@@ -92,21 +97,20 @@ module Storage
     # Takes a path to a file and returns whether it exists in this tree
     def file_exists?(path)
       names = path.split("/").reject(&:empty?)
-      self.dig(*names[0..-2]).children.filter { |c| c.class == String } .each do |file|
-        if file == names[-1]
-          return true
-        end
-      end
-      return false
+      dir_arr = names[0..-2]
+      file_name = names.last
+      bottom_dir = dig(*dir_arr)
+
+      bottom_dir.children.any? { |c| c.is_a?(String) && c == file_name }
     end
     
     protected
     
     def exists?(dirs, file)
       if dirs.empty?
-        return @children.filter { |c| c.class == String } .include? file
+        return @children.filter { |c| c.is_a?(String) }.include?(file)
       else
-        return self.subtree(dirs.first).exists?(dirs[1..-1], file)
+        return self.subtree(dirs.first).exists?(dirs[1..], file)
       end
     end
   end
