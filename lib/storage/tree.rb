@@ -92,7 +92,6 @@ module Storage
     # Takes a path to a file and returns whether it exists in this tree
     def file_exists?(path)
       names = path.split("/").reject(&:empty?)
-      puts names.inspect
       self.dig(*names[0..-2]).children.filter { |c| c.class == String } .each do |file|
         if file == names[-1]
           return true
