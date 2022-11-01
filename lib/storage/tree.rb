@@ -59,6 +59,25 @@ module Storage
     def show
       TTY::Tree[self.to_hash].render
     end
+
+    # Given the name of a directory in this tree, return a tree rooted at that directory
+    # Accepts as many arguments as its given, squashed into a single array named *path
+    # Recursively indexes children to find subdirectory at given path
+    def dig(*path, iter: 0)
+      subdir = @children.find { |c| c.is_a?(Tree) && c.name == path[iter] }
+
+      if !subdir
+        # No such subdirectory
+        raise "The directory '#{File.join(*arr)}' could not be found"
+      elsif iter + 1 == arr.length
+        # Base case
+        return subdir
+      else
+        # Continue with recursive indexing
+        iter += 1
+        subdir.dig(*arr, iter: iter)
+      end
+    end
     
     # Given the name of a directory in this tree, return a tree rooted at that directory
     def subtree(dir)
