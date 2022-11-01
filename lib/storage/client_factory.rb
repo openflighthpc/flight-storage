@@ -23,12 +23,14 @@
 # https://github.com/openflighthpc/flight-storage
 #==============================================================================
 
+require_relative 'providers/azure'
 require_relative 'providers/example'
 
 module Storage
   class ClientFactory
     PROVIDERS = {
-      example: { klass: ExampleClient, friendly_name: "Example" }
+      example: { klass: ExampleClient, friendly_name: "Example" },
+      azure: { klass: AzureClient, friendly_name: "Azure" },
     }
 
     def self.for(provider, credentials = {})
