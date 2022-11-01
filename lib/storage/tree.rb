@@ -57,7 +57,7 @@ module Storage
     end
     
     def show
-      TTY::Tree[self.to_hash].render()
+      TTY::Tree[self.to_hash].render
     end
     
     # Given the name of a directory in this tree, return a tree rooted at that directory
@@ -72,7 +72,7 @@ module Storage
     
     # Takes a path to a file and returns whether it exists in this tree
     def file_exists?(path)
-      names = path.split("/").reject { |f| f.empty? }
+      names = path.split("/").reject(&:empty?)
       self.exists?(names[0..-2], names.last)
     end
     
@@ -80,7 +80,7 @@ module Storage
     
     def exists?(dirs, file)
       if dirs.empty?
-        return @children.filter{|c| c.class == String}.include? file
+        return @children.filter { |c| c.class == String } .include? file
       else
         return self.subtree(dirs.first).exists?(dirs[1..-1], file)
       end
