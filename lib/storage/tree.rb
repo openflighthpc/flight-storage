@@ -26,33 +26,37 @@ require "tty-tree"
 
 module Storage
   class Tree
-    attr_reader :name, :children
+    attr_reader :name, :files, :subdirs
     
     def initialize(name, children)
       @name = name
-      @children = [].tap do |a|
-        children.each do |child|
-          if child.is_a?(String)
-            a << child
-          elsif child.is_a?(Hash)
-            child.each do |k, v|
-              a << Tree.new(k.to_s, v)
-            end
+      @files = []
+      @subdirs = []
+      children.each do |child|
+        if child.is_a?(String)
+          @files << child
+        elsif child.is_a?(Hash)
+          child.each do |k, v|
+            @subdirs << Tree.new(k.to_s, v)
           end
         end
       end
+      @files.sort!
+      @subdirs.sort_by! { |d| d.name }
     end
     
     # Convert to a hash format that tty-tree can render properly
     def to_hash
       hash_children = []
-      @children.each do |child|
-        if child.class == String
-          hash_children << child
-        else
-          hash_children << child.to_hash
-        end
+
+      @files.each do |file|
+        hash_children << file
       end
+
+      @subdirs.each do |dir|
+        hash_children << dir.to_hash
+      end
+
       return { @name => hash_children }
     end
     
@@ -64,12 +68,12 @@ module Storage
     # Accepts as many arguments as its given, squashed into a single array named *path
     # Recursively indexes children to find subdirectory at given path
     def dig(*path, iter: 0)
-      # If path has length of zer, return top-level tree
+      # If path has length of zero, return top-level tree
       if path.length == 0
         return self
       end
 
-      subdir = @children.find { |c| c.is_a?(Tree) && c.name == path[iter] }
+      subdir = @subdirs.find { |c| c.name == path[iter] }
 
       if !subdir
         # No such subdirectory
@@ -86,12 +90,7 @@ module Storage
     
     # Given the name of a directory in this tree, return a tree rooted at that directory
     def subtree(dir)
-      @children.filter { |c| c.class == Tree }.each do |tree|
-        if tree.name == dir
-          return tree
-        end
-      end
-      raise "The directory '#{dir}' could not be found"
+      @subdirs.find { |c| c.name == dir }
     end
     
     # Takes a path to a file and returns whether it exists in this tree
@@ -101,14 +100,14 @@ module Storage
       file_name = names.last
       bottom_dir = dig(*dir_arr)
 
-      bottom_dir.children.any? { |c| c.is_a?(String) && c == file_name }
+      bottom_dir.files.any? { |c| c == file_name }
     end
     
     protected
     
     def exists?(dirs, file)
       if dirs.empty?
-        return @children.filter { |c| c.is_a?(String) }.include?(file)
+        return @files.include?(file)
       else
         return self.subtree(dirs.first).exists?(dirs[1..], file)
       end
