@@ -89,5 +89,37 @@ EOF
       c.summary = 'Set cloud storage provider'
       c.action Commands, :set
     end
+    
+    command :list do |c|
+      cli_syntax(c)
+      c.summary = "Display current directory"
+      c.action Commands, :list
+      c.description = "Display a tree showing the structure of the current directory"
+    end
+    alias_command :ls, :list
+    
+    command :push do |c|
+      cli_syntax(c)
+      c.summary = "Save a file to the cloud"
+      c.action Commands, :push
+      c.description = "Uploads a given file from local storage to the cloud"
+    end
+    alias_command :upload, :push
+    
+    command :pull do |c|
+      cli_syntax(c)
+      c.summary = "Save a file to this machine"
+      c.action Commands, :pull
+      c.description = "Downloads a given file from the cloud to local storage"
+    end
+    alias_command :download, :pull
+    
+    command :delete do |c|
+      cli_syntax(c)
+      c.summary = "Delete a file from the cloud"
+      c.action Commands, :delete
+      c.description = "Delete a given file from the cloud"
+    end
+    alias_command :rm, :delete
   end
 end
