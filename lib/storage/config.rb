@@ -91,7 +91,11 @@ module Storage
       end
 
       def provider
-        data.fetch(:provider).downcase.to_sym
+        provider = data.fetch(:provider)
+        if provider.nil?
+          raise "No provider set; please run `storage configure`"
+        end
+        provider.downcase.to_sym
       end
 
       def credentials
