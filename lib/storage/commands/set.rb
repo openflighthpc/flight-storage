@@ -25,7 +25,6 @@
 # https://github.com/openflighthpc/flight-storage
 #==============================================================================
 require 'tty-prompt'
-require 'yaml'
 
 require_relative '../client_factory'
 require_relative '../command'
@@ -34,33 +33,20 @@ module Storage
   module Commands
     class Set < Command
       def run
-        klass = ClientFactory::PROVIDERS[Config.provider][:klass]
-        questions = to_questions(klass)
-        answers = prompt.collect do
-          questions.each do |question|
-            key(question[:key]).ask(question[:text])
-          end
-        end
+        provider = prompt.select(
+          "Select your desired cloud provider:",
+          choices
+        )
 
-        if save_credentials(answers)
-          puts "Credentials saved to #{Config.credentials_dir}/"
-        end
+        Config.data.set(:provider, value: provider)
+        Config.save_data
       end
 
       private
 
-      def save_credentials(credentials_hash)
-        File.write(Config.credentials_file, YAML.dump(credentials_hash))
-      end
-
-      def to_questions(klass)
-        klass.creds_schema.map do |k, v|
-          friendly = k.to_s.gsub('_', ' ').capitalize
-          text = "#{friendly}:"
-          {
-            key: k,
-            text: text
-          }
+      def choices
+        ClientFactory::PROVIDERS.map do |k, v|
+          { v[:friendly_name] => k.to_s }
         end
       end
 
