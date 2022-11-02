@@ -24,37 +24,13 @@
 # For more information on Flight Storage, please visit:
 # https://github.com/openflighthpc/flight-storage
 #==============================================================================
-require_relative 'commands/configure'
-require_relative 'commands/hello'
-require_relative 'commands/set'
-require_relative 'commands/list'
-require_relative 'commands/push'
-require_relative 'commands/pull'
-require_relative 'commands/delete'
+require_relative '../command'
 
 module Storage
   module Commands
-    class << self
-      def method_missing(s, *a, &b)
-        if clazz = to_class(s)
-          clazz.new(*a).run!
-        else
-          raise 'command not defined'
-        end
-      end
-
-      def respond_to_missing?(s)
-        !!to_class(s)
-      end
-
-      private
-      def to_class(s)
-        s.to_s.split('-').reduce(self) do |clazz, p|
-          p.gsub!(/_(.)/) {|a| a[1].upcase}
-          clazz.const_get(p[0].upcase + p[1..-1])
-        end
-      rescue NameError
-        nil
+    class Pull < Command
+      def run
+        client.pull
       end
     end
   end
