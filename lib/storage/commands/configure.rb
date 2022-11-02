@@ -24,35 +24,49 @@
 # For more information on Flight Storage, please visit:
 # https://github.com/openflighthpc/flight-storage
 #==============================================================================
-require 'ostruct'
+require 'tty-prompt'
+require 'yaml'
 
-require_relative 'client_factory'
-require_relative 'config'
+require_relative '../client_factory'
+require_relative '../command'
 
 module Storage
-  class Command
-    attr_accessor :args, :options
+  module Commands
+    class Configure < Command
+      def run
+        klass = ClientFactory::PROVIDERS[Config.provider][:klass]
+        questions = to_questions(klass)
+        answers = prompt.collect do
+          questions.each do |question|
+            key(question[:key]).ask(question[:text], required: true)
+          end
+        end
 
-    def initialize(args, options, command_name = nil)
-      @args = args.freeze
-      @options = OpenStruct.new(options.__hash__)
-    end
+        if save_credentials(answers)
+          puts "Credentials saved to #{Config.credentials_dir}/"
+        end
+      end
 
-    # this wrapper is here to later enable error handling &/ logging
-    def run!
-      run
-    end
+      private
 
-    def run
-      raise NotImplementedError
-    end
+      def save_credentials(credentials_hash)
+        File.write(Config.credentials_file, YAML.dump(credentials_hash))
+      end
 
-    private
+      def to_questions(klass)
+        klass.creds_schema.map do |k, v|
+          friendly = k.to_s.gsub('_', ' ').capitalize
+          text = "#{friendly}:"
+          {
+            key: k,
+            text: text
+          }
+        end
+      end
 
-    def client
-      provider = Config.provider
-      creds = Config.credentials
-      @client ||= ClientFactory.for(provider, credentials: creds)
+      def prompt
+        @prompt ||= TTY::Prompt.new(help_color: :yellow)
+      end
     end
   end
 end

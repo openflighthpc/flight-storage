@@ -68,6 +68,12 @@ module Storage
       end
     end
 
+    command :configure do |c|
+      cli_syntax(c)
+      c.summary = 'Configure credentials for chosen cloud storage provider'
+      c.action Commands, :configure
+    end
+
     command :hello do |c|
       cli_syntax(c)
       c.summary = 'Say hello'
@@ -77,5 +83,11 @@ Say hello.
 EOF
     end
     alias_command :h, :hello
+
+    command :set do |c|
+      cli_syntax(c)
+      c.summary = 'Set cloud storage provider'
+      c.action Commands, :set
+    end
   end
 end

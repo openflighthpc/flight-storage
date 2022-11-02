@@ -32,7 +32,7 @@ module Storage
     def self.creds_schema
       {
         required_key: String,
-        timestamp: Integer
+        timestamp: String
       }
     end
   end

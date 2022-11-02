@@ -24,35 +24,35 @@
 # For more information on Flight Storage, please visit:
 # https://github.com/openflighthpc/flight-storage
 #==============================================================================
-require 'ostruct'
+require 'tty-prompt'
 
-require_relative 'client_factory'
-require_relative 'config'
+require_relative '../client_factory'
+require_relative '../command'
 
 module Storage
-  class Command
-    attr_accessor :args, :options
+  module Commands
+    class Set < Command
+      def run
+        provider = prompt.select(
+          "Select your desired cloud provider:",
+          choices
+        )
 
-    def initialize(args, options, command_name = nil)
-      @args = args.freeze
-      @options = OpenStruct.new(options.__hash__)
-    end
+        Config.data.set(:provider, value: provider)
+        Config.save_data
+      end
 
-    # this wrapper is here to later enable error handling &/ logging
-    def run!
-      run
-    end
+      private
 
-    def run
-      raise NotImplementedError
-    end
+      def choices
+        ClientFactory::PROVIDERS.map do |k, v|
+          { v[:friendly_name] => k.to_s }
+        end
+      end
 
-    private
-
-    def client
-      provider = Config.provider
-      creds = Config.credentials
-      @client ||= ClientFactory.for(provider, credentials: creds)
+      def prompt
+        @prompt ||= TTY::Prompt.new(help_color: :yellow)
+      end
     end
   end
 end
