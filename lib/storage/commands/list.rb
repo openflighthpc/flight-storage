@@ -30,7 +30,10 @@ module Storage
   module Commands
     class List < Command
       def run
-        client.list
+        # ARGS
+        # [ directory ]
+
+        client.list(args[0])
       end
     end
   end

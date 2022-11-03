@@ -30,6 +30,12 @@ module Storage
   module Commands
     class Push < Command
       def run
+        # ARGS
+        # [ source_file, destination ]
+
+        if client.pull(args[0], args[1])
+          "File '#{File.expand(args[0])}' uploaded to '#{args[1]}'"
+        end
         client.push
       end
     end
