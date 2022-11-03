@@ -33,7 +33,7 @@ module Storage
         # ARGS
         # [ directory ]
 
-        client.list(args[0] || '')
+        client.list(*args[0])
       end
     end
   end
