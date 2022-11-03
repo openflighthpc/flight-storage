@@ -30,7 +30,12 @@ module Storage
   module Commands
     class Pull < Command
       def run
-        client.pull
+        # ARGS
+        # [ source_file, destination ]
+
+        if client.pull(args[0], args[1])
+          "File '#{args[0]}' downloaded to '#{File.expand_path(args[1])}'"
+        end
       end
     end
   end

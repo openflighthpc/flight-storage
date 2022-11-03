@@ -30,7 +30,12 @@ module Storage
   module Commands
     class Delete < Command
       def run
-        client.delete
+        # ARGS:
+        # [ target_file ]
+        
+        if client.delete(args[0])
+          puts "File at #{args} deleted"
+        end
       end
     end
   end

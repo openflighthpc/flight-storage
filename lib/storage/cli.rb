@@ -91,7 +91,7 @@ EOF
     end
     
     command :list do |c|
-      cli_syntax(c)
+      cli_syntax(c, "[DIRECTORY]")
       c.summary = "Display current directory"
       c.action Commands, :list
       c.description = "Display a tree showing the structure of the current directory"
@@ -99,18 +99,27 @@ EOF
     alias_command :ls, :list
     
     command :push do |c|
-      cli_syntax(c, "FILE")
+      cli_syntax(c, "SRC [DEST]")
       c.summary = "Save a file to the cloud"
       c.action Commands, :push
-      c.description = "Uploads a given file from local storage to the cloud"
+      c.description = <<~EOF
+      Uploads a given file from local storage to the cloud.
+      If no destination path is given at DEST, the file is pushed
+      to the root directory of the cloud storage.
+
+      EOF
     end
     alias_command :upload, :push
     
     command :pull do |c|
-      cli_syntax(c, "FILE")
+      cli_syntax(c, "FILE [DEST]")
       c.summary = "Save a file to this machine"
       c.action Commands, :pull
-      c.description = "Downloads a given file from the cloud to local storage"
+      c.description = <<~EOF
+      Downloads a given file from the cloud to local storage.
+      If no destination path is given at DEST, the file is pulled
+      to the current working directory.
+      EOF
     end
     alias_command :download, :pull
     

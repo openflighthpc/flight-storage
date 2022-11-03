@@ -27,4 +27,18 @@
 module Storage
   StorageError = Class.new(RuntimeError)
   AbstractMethodError = Class.new(StandardError)
+
+  class ResourceNotFoundError < StandardError
+    def initialize(path)
+      msg = "Remote resource '#{path}' not found"
+      super(msg)
+    end
+  end
+
+  class ResourceExistsError < StandardError
+    def initialize(path)
+      msg = "Remote resource already exists at '#{path}'"
+      super(msg)
+    end
+  end
 end
