@@ -41,8 +41,24 @@ module Storage
     end
     
     def list(path="")
-      tree ||= Tree.new(@credentials[:bucket_name], self.to_hash("")[nil])
       puts tree.dig(*path.split("/").compact).show
+    end
+    
+    def tree
+      @tree ||= Tree.new(@credentials[:bucket_name], self.to_hash("")[nil])
+    end
+    
+    def pull(source, dest="./")
+      if tree.file_exists?(source)
+        puts "pulling"
+        path = File.expand_path(dest) + "/" + source.split("/").last
+        
+        File.open(path, 'w+b') do |file|
+          resp = client.get_object(response_target: path, bucket: @credentials[:bucket_name], key: source)
+        end
+      else
+        raise "File '#{source}' does not exist in '#{@credentials[:bucket_name]}'."
+      end
     end
     
     def to_hash(prefix)
