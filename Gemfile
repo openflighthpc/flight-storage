@@ -35,3 +35,6 @@ gem 'xdg', git: 'https://github.com/bkuhlmann/xdg', tag: '3.0.2'
 
 # Azure provider gems
 gem 'azure-storage-file'
+
+# AWS provider gems
+gem 'aws-sdk-s3'
