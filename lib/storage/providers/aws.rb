@@ -50,9 +50,9 @@ module Storage
     
     def pull(source, dest="./")
       if tree.file_exists?(source)
-        puts "pulling"
         path = File.expand_path(dest) + "/" + source.split("/").last
         
+        source = source[1..-1] if source[0] == "/"
         File.open(path, 'w+b') do |file|
           resp = client.get_object(response_target: path, bucket: @credentials[:bucket_name], key: source)
         end
