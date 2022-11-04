@@ -40,12 +40,12 @@ module Storage
       }
     end
     
-    def list(path="")
-      puts tree.dig(*path.split("/").compact).show
+    def list(path="/")
+      puts tree.dig(*path.delete_prefix("/").split("/")).show
     end
     
     def tree
-      @tree ||= Tree.new(@credentials[:bucket_name], self.to_hash("")[nil])
+      @tree ||= Tree.new("/", self.to_hash("")[nil])
     end
     
     def pull(source, dest="./")
