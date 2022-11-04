@@ -78,9 +78,9 @@ module Storage
     
     def client
       @client ||= Aws::S3::Client.new(
-        access_key_id: "AKIASMDM4Q4U67RVME55",
-        secret_access_key: "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",
-        region: "eu-west-2"
+        access_key_id: @credentials[:access_key],
+        secret_access_key: @credentials[:secret_access_key],
+        region: @credentials[:region]
       )
     end
     
