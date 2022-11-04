@@ -61,6 +61,26 @@ module Storage
       end
     end
     
+    def push(source, dest="")
+      tree.dig(*dest.split("/").compact)
+      if File.file?(File.expand_path(source))
+        #File.open(File.expand_path(source)) do |file|
+        client.put_object(body: File.expand_path(source), bucket: @credentials[:bucket_name], key: dest + source.split("/").last)
+        #end
+      else
+        raise "File '#{source}' does not exist."
+      end
+    end
+    
+    def delete(path)
+      if tree.file_exists?(path)
+        client.delete_object(bucket: @credentials[:bucket_name], key: path)
+      else
+        raise "File '#{path}' does not exist."
+      end
+    end
+    
+    # Convert the bucket contents into a tree-like hash
     def to_hash(prefix)
       children = []
       dirs = client.list_objects(bucket: @credentials[:bucket_name], delimiter: "/", prefix: prefix)
