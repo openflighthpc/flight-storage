@@ -49,6 +49,8 @@ module Storage
     end
     
     def pull(source, dest="./")
+      source = source.gsub(%r{/+}, "/")
+      dest = dest.gsub(%r{/+}, "/")
       if tree.file_exists?(source)
         path = File.expand_path(dest) + "/" + source.split("/").last
         
@@ -61,18 +63,20 @@ module Storage
       end
     end
     
-    def push(source, dest="")
-      tree.dig(*dest.split("/").compact)
+    def push(source, dest="/")
+      source = source.gsub(%r{/+}, "/")
+      dest = dest.gsub(%r{/+}, "/").delete_prefix("/")
+      tree.dig(*dest.split("/"))
+      
       if File.file?(File.expand_path(source))
-        #File.open(File.expand_path(source)) do |file|
         client.put_object(body: File.expand_path(source), bucket: @credentials[:bucket_name], key: dest + source.split("/").last)
-        #end
       else
         raise "File '#{source}' does not exist."
       end
     end
     
     def delete(path)
+      path = path.gsub(%r{/+}, "/").delete_prefix("/")
       if tree.file_exists?(path)
         client.delete_object(bucket: @credentials[:bucket_name], key: path)
       else
