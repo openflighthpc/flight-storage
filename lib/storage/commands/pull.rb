@@ -33,9 +33,23 @@ module Storage
         # ARGS
         # [ source_file, destination ]
 
-        valid_args = args.map{ |a| a.gsub(%r{/+}, "/") }
-        if client.pull(valid_args[0], valid_args[1])
-          puts "File '#{valid_args[0]}' downloaded to '#{File.expand_path(valid_args[1])}'"
+        valid_args = args.map { |a| a&.gsub(%r{/+}, "/") }
+
+        source = Pathname.new(valid_args[0])
+        dest_file = source.basename
+
+        if valid_args[1] == nil
+          # Pull to current directory
+          dest_dir = Dir.pwd
+          destination = File.join(dest_dir, dest_file)
+        else
+          destination = File.join(File.expand_path(valid_args[1]), dest_file)
+        end
+
+        resource = client.pull(source.to_s, destination)
+
+        if resource
+          puts "Resource '#{source}' saved to '#{resource}'"
         end
       end
     end

@@ -31,6 +31,11 @@ require_relative '../tree'
 
 module Storage
   class AzureClient < Client
+    TYPES = {
+      file: Azure::Storage::File::File,
+      directory: Azure::Storage::File::Directory::Directory
+    }
+
     def self.creds_schema
       {
         storage_account_name: String,
@@ -39,42 +44,122 @@ module Storage
       }
     end
 
-    def list(path='')
-      contents = to_arr(query_directory(path))
-      delve_path = path.split('/')
-      delve_path.unshift('/') # Need a root dir denoter
+    def delete(file)
+      delete_file(file)
+    end
 
-      # Create a nested hash for each directory we traverse
-      # so they can all be printed properly by Tree#render.
-      full_tree = delve_path.reverse.inject(contents) do |v, k|
-        [{ k => v }]
-      end.first
+    def pull(src, dest)
+      content = get_file(src)
 
-      puts Tree.new(full_tree.first[0], full_tree.first[1]).show
-    rescue Azure::Core::Http::HTTPError => e
-      if e.message.include?("resource does not exist")
-        raise ResourceNotFoundError.new(path)
+      # Use File::WRONLY|File::CREAT|File::EXCL flags to
+      # only write to file if it doesn't already exist.
+      # We'll probably want to override this later if we add
+      # a `--force` option
+      File.open(
+        File.expand_path(dest),
+        File::WRONLY|File::CREAT|File::EXCL
+      ) do |f|
+        f.write(content)
       end
+
+      return File.expand_path(dest)
+    rescue Errno::EEXIST
+      raise LocalResourceExistsError.new(dest)
+    end
+
+    def push(src, dest)
+      content = File.open(src, 'rb') { |f| f.read }
+      filename = File.basename(src)
+
+      target_dir = File.dirname(dest)
+      target_file = File.basename(dest)
+
+      file = client.create_file(
+        file_share_name,
+        target_dir,
+        target_file,
+        content.size
+      )
+
+      client.put_file_range(
+        file_share_name,
+        target_dir,
+        file.name,
+        0,
+        content.size - 1,
+        content
+      )
+    end
+
+    def list(path='', tree: false)
+      contents = query_directory(path)
+
+      dirs = contents.select { |c| c.is_a?(TYPES[:directory]) }
+                     .map { |d| "#{d.name}/" }
+                     .sort
+
+      files = contents.select { |c| c.is_a?(TYPES[:file]) }
+                      .map(&:name)
+                      .sort
+
+      (dirs + files).join("\n")
     end
 
     private
 
-    def to_arr(array)
-      [].tap do |a|
-        array.each do |child|
-          if child.is_a?(Azure::Storage::File::File)
-            a << child.name
-          elsif child.is_a?(Azure::Storage::File::Directory::Directory)
-            a << { child.name => [] }
-          end
-        end
+    def delete_file(src)
+      path = src.split('/')
+      dir = path.length == 1 ? '' : path[..-2].join('/')
+
+      # ensure directory exists, as client doesn't tell you and
+      # continues as normal if the directory doesn't exist
+      query_directory(dir)
+
+      client.delete_file(
+        file_share_name,
+        dir,
+        path.last
+      )
+
+      src
+    rescue Azure::Core::Http::HTTPError => e
+      if e.message.include?("resource does not exist")
+        raise ResourceNotFoundError.new(src)
+      end
+    end
+
+    def get_file(src)
+      path = src.split('/')
+      dir = path.length == 1 ? '' : path[..-2].join('/')
+
+      # ensure directory exists, as client doesn't tell you and
+      # continues as normal if the directory doesn't exist
+      query_directory(dir)
+
+      file, content = client.get_file(
+        file_share_name,
+        dir,
+        path.last
+      )
+      
+      content
+    rescue Azure::Core::Http::HTTPError => e
+      if e.message.include?("resource does not exist")
+        raise ResourceNotFoundError.new(src)
       end
     end
 
     def query_directory(directory='')
-      client.list_directories_and_files(@credentials[:file_share_name], directory)
+      client.list_directories_and_files(file_share_name, directory)
+    rescue Azure::Core::Http::HTTPError => e
+      if e.message.include?("resource does not exist")
+        raise ResourceNotFoundError.new(directory)
+      end
     end
 
+    def file_share_name
+      @credentials[:file_share_name]
+    end
 
     def client
       @client ||= Azure::Storage::File::FileService.create(
