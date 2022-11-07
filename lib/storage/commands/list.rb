@@ -32,9 +32,11 @@ module Storage
       def run
         # ARGS
         # [ directory ]
+        # OPTS
+        # [ tree ]
 
         args[0] = args[0].gsub(%r{/+}, "/")
-        client.list(*args[0])
+        client.list(@options.tree, *args[0])
       end
     end
   end
