@@ -40,8 +40,16 @@ module Storage
       }
     end
     
-    def list(path="/")
-      puts tree.dig(*path.delete_prefix("/").split("/")).show
+    def list(use_tree, path="/")
+      subtree = tree.dig(*path.delete_prefix("/").split("/"))
+      if use_tree
+        puts subtree.show
+      else
+        subtree.subdirs.each do |child|
+          puts child.name + "/"
+        end
+        puts subtree.files
+      end
     end
     
     def tree
