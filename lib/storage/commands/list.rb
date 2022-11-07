@@ -33,6 +33,7 @@ module Storage
         # ARGS
         # [ directory ]
 
+        args[0] = args[0].gsub(%r{/+}, "/")
         client.list(*args[0])
       end
     end
