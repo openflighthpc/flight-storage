@@ -33,8 +33,9 @@ module Storage
         # ARGS
         # [ source_file, destination ]
 
+        args = args.map{ |a| a.gsub(%r{/+}, "/") }
         if client.pull(args[0], args[1])
-          "File '#{args[0]}' downloaded to '#{File.expand_path(args[1])}'"
+          puts "File '#{args[0]}' downloaded to '#{File.expand_path(args[1])}'"
         end
       end
     end

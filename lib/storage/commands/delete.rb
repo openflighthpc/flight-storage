@@ -33,8 +33,9 @@ module Storage
         # ARGS:
         # [ target_file ]
         
+        args[0] = args[0].gsub(%r{/+}, "/")
         if client.delete(args[0])
-          puts "File at #{args} deleted"
+          puts "File at #{args[0]} deleted"
         end
       end
     end
