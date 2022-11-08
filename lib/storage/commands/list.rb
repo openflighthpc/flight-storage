@@ -35,8 +35,8 @@ module Storage
         # OPTS
         # [ tree ]
 
-        args[0] = args[0].gsub(%r{/+}, "/")
-        client.list(@options.tree, *args[0])
+        validated = args[0].gsub(%r{/+}, "/")
+        client.list(@options.tree, *validated)
       end
     end
   end
