@@ -32,8 +32,11 @@ module Storage
       def run
         # ARGS
         # [ directory ]
+        # OPTS
+        # [ tree ]
 
-        client.list(*args[0])
+        validated = args[0].gsub(%r{/+}, "/")
+        client.list(@options.tree, *validated)
       end
     end
   end

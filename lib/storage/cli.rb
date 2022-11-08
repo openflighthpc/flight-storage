@@ -95,6 +95,7 @@ EOF
       c.summary = "Display current directory"
       c.action Commands, :list
       c.description = "Display a tree showing the structure of the current directory"
+      c.option "--tree", "Show results in a user-friendly tree structure"
     end
     alias_command :ls, :list
     
