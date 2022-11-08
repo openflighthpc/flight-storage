@@ -92,8 +92,13 @@ module Storage
     # Convert the bucket contents into a tree-like hash
     def to_hash(prefix)
       children = []
-      dirs = client.list_objects(bucket: @credentials[:bucket_name], delimiter: "/", prefix: prefix)
-      dirs = dirs.common_prefixes.map {|dir| dir = dir.prefix.split("/").last }
+      resp = client.list_objects(bucket: @credentials[:bucket_name], delimiter: "/", prefix: prefix)
+      dirs = resp.common_prefixes.map {|dir| dir = dir.prefix.split("/").last }
+      while resp.is_truncated
+        marker = resp.next_marker
+        resp = client.list_objects(bucket: @credentials[:bucket_name], delimiter: "/", prefix: prefix, marker: marker)
+        dirs += resp.common_prefixes.map {|dir| dir = dir.prefix.split("/").last }
+      end
       dirs&.each do |dir|
         children << to_hash(prefix + dir + "/")
       end
