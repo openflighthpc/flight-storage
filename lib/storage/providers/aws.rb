@@ -65,7 +65,7 @@ module Storage
           resp = client.get_object(response_target: path, bucket: @credentials[:bucket_name], key: source)
         end
       else
-        raise "File '#{source}' does not exist in '#{@credentials[:bucket_name]}'."
+        raise ResourceNotFoundError, source
       end
     end
     
@@ -85,7 +85,7 @@ module Storage
       if tree.file_exists?(path)
         client.delete_object(bucket: @credentials[:bucket_name], key: path)
       else
-        raise "File '#{path}' does not exist."
+        raise ResourceNotFoundError, path
       end
     end
     
@@ -111,11 +111,27 @@ module Storage
     end
     
     def client
-      @client ||= Aws::S3::Client.new(
-        access_key_id: @credentials[:access_key],
-        secret_access_key: @credentials[:secret_access_key],
-        region: @credentials[:region]
-      )
+      begin
+        @client ||= Aws::S3::Client.new(
+          access_key_id: @credentials[:access_key],
+          secret_access_key: @credentials[:secret_access_key],
+          region: @credentials[:region]
+        )
+        # Attempt to access the bucket
+        @client.list_objects(bucket: @credentials[:bucket_name], max_keys: 0)
+      rescue Aws::S3::Errors::InvalidAccessKeyId, Aws::S3::Errors::SignatureDoesNotMatch
+        raise "Given AWS key ID and secret key do not match, try 'storage configure' to set valid credentials"
+      rescue Aws::Errors::InvalidRegionError
+        if @credentials[:region] == ""
+          msg = "Region not set, try 'storage configure' to set a valid region"
+        else
+          msg = "Region '#{@credentials[:region]}' not valid, try 'storage configure' to set a valid region"
+        end
+        raise msg
+      rescue Seahorse::Client::NetworkingError
+        raise "Failed to connect to AWS. Check that your region is correctly configured and that you have a stable network connection."
+      end
+      @client
     end
     
     def resource
