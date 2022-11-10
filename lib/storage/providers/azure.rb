@@ -92,20 +92,31 @@ module Storage
     end
 
     def list(path='', tree: false)
-      contents = query_directory(path)
+      if tree
+        dir_tree = query_tree(path)
+        delve_path = path.split('/')
 
-      dirs = contents.select { |c| c.is_a?(TYPES[:directory]) }
-                     .map { |d| "#{d.name}/" }
-                     .sort
+        # Create a nested hash for each directory we traverse
+        # so they can all be printed properly by Tree#render
+        full_tree = delve_path.reverse.inject(dir_tree) { |v, k| [{ k => v }] }
+        Tree.new('/', full_tree).show
+      else
+        contents = query_directory(path)
 
-      files = contents.select { |c| c.is_a?(TYPES[:file]) }
-                      .map(&:name)
-                      .sort
+        dirs = contents.select { |c| c.is_a?(TYPES[:directory]) }
+                       .map { |d| "#{d.name}/" }
+                       .sort
 
-      (dirs + files).join("\n")
+        files = contents.select { |c| c.is_a?(TYPES[:file]) }
+                        .map(&:name)
+                        .sort
+
+        (dirs + files).join("\n")
+      end
     end
 
     private
+
 
     def delete_file(src)
       path = src.split('/')
@@ -146,6 +157,20 @@ module Storage
     rescue Azure::Core::Http::HTTPError => e
       if e.message.include?("resource does not exist")
         raise ResourceNotFoundError.new(src)
+      end
+    end
+
+    def query_tree(directory='')
+      dir = client.list_directories_and_files(file_share_name, directory)
+
+      [].tap do |a|
+        dir.each do |child|
+          if child.is_a?(TYPES[:file])
+            a << child.name
+          elsif child.is_a?(TYPES[:directory])
+            a << { child.name => query_tree(File.join(directory, child.name)) }
+          end
+        end
       end
     end
 
