@@ -28,6 +28,13 @@ module Storage
   StorageError = Class.new(RuntimeError)
   AbstractMethodError = Class.new(StandardError)
 
+  class InvalidCredentialsError < StandardError
+    def initialize(provider)
+      msg = "Invalid credentials given for provider '#{provider}'"
+      super(msg)
+    end
+  end
+
   class ResourceNotFoundError < StandardError
     def initialize(path)
       msg = "Remote resource '#{path}' not found"

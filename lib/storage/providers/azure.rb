@@ -191,6 +191,8 @@ module Storage
         storage_account_name: @credentials[:storage_account_name],
         storage_access_key: @credentials[:storage_access_key]
       )
+    rescue Azure::Storage::Common::InvalidOptionsError => e
+      raise InvalidCredentialsError.new('Azure')
     end
   end
 end
