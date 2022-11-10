@@ -74,7 +74,10 @@ module Storage
       tree.dig(*dest.split("/"))
       
       if File.file?(File.expand_path(source))
-        client.put_object(body: File.expand_path(source), bucket: @credentials[:bucket_name], key: dest + source.split("/").last)
+        obj = Aws::S3::Object.new(bucket_name: @credentials[:bucket_name], key: dest + source.split("/").last, :client => client)
+        obj.upload_stream({part_size: 100 * 1024 * 1024, tempfile: true}) do |write_stream|
+          IO.copy_stream(File.open(File.expand_path(source), "r"), write_stream)
+        end
       else
         raise "File '#{source}' does not exist."
       end
