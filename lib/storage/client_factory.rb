@@ -33,7 +33,7 @@ module Storage
       azure: { klass: AzureClient, friendly_name: "Azure" },
     }
 
-    def self.for(provider, credentials = {})
+    def self.for(provider, credentials: {})
       raise "Invalid provider type" unless valid_provider?(provider)
       (PROVIDERS[provider][:klass]).new(credentials)
     end
