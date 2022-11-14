@@ -4,7 +4,7 @@ This doc goes over the steps required to set up an Azure file share to be used w
 
 ## Create a storage account
 
-From the Azure dashboard, select `Storage accounts` from the `Azure services` menu.
+From the Azure dashboard ([link](https://portal.azure.com/)), select `Storage accounts` from the `Azure services` menu.
 
 Create a storage account. The following settings are the recommended settings; if you know what you are doing, most of them can be changed to suit your preferences.
 
@@ -13,7 +13,7 @@ Create a storage account. The following settings are the recommended settings; i
 - Choose a `Storage account name` and keep note of it, as this is a required Flight Storage credential.
 - Pick a region (which region is specific to your preferences).
 - Pick a performance setting (if in doubt, use `Standard`).
-- Pick a redundancy setting (if in doubt, use defaults)
+- Pick a redundancy setting (if in doubt, use defaults).
 
 ### Advanced
 - Required secure transfer for REST API operations
@@ -23,7 +23,7 @@ Create a storage account. The following settings are the recommended settings; i
   - You may use either of the other options, although there will be further configuration required to get them working. Public access from all networks will still require a valid secret access key.
  
  ### Data protection
- - Keep defaults
+- Keep defaults
 
 ### Encryption
 - Keep defaults
