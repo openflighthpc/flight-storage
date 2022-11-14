@@ -40,52 +40,48 @@ module Storage
       }
     end
     
-    def list(use_tree, path="/")
-      subtree = tree.dig(*path.delete_prefix("/").split("/"))
+    def list(path, tree: false)
+      path = path[1..-1]
+      subtree = dir_tree.dig(*path.split("/"))
+      msg = ""
       if use_tree
-        puts subtree.show
+        msg << subtree.show
       else
         subtree.subdirs.each do |child|
-          puts child.name + "/"
+          msg << child.name + "/\n"
         end
-        puts subtree.files
+        msg << subtree.files.join("\n")
       end
+      msg
     end
     
-    def tree
-      @tree ||= Tree.new("/", self.to_hash("")[nil])
+    def dir_tree
+      @dir_tree ||= Tree.new("/", self.to_hash("")[nil])
     end
     
-    def pull(source, dest="./")
-      if tree.file_exists?(source)
-        path = File.expand_path(dest) + "/" + source.split("/").last
-        
-        source = source[1..-1] if source[0] == "/"
-        File.open(path, 'w+b') do |file|
-          resp = client.get_object(response_target: path, bucket: @credentials[:bucket_name], key: source)
-        end
+    def pull(source, dest)
+      if dir_tree.file_exists?(source)
+        source = source[1..-1]
+        puts "Downloading '#{source}' (#{filesize(source)})..."
+        resp = client.get_object(response_target: dest, bucket: @credentials[:bucket_name], key: source)
       else
         raise ResourceNotFoundError, source
       end
     end
     
-    def push(source, dest="/")
-      dest = dest.delete_prefix("/")
-      tree.dig(*dest.split("/"))
+    def push(source, dest)
+      dest = dest[1..-1]
+      dir_tree.dig(*dest.split("/"))
       
-      if File.file?(File.expand_path(source))
-        obj = Aws::S3::Object.new(bucket_name: @credentials[:bucket_name], key: dest + source.split("/").last, :client => client)
-        obj.upload_stream({part_size: 100 * 1024 * 1024, tempfile: true}) do |write_stream|
-          IO.copy_stream(File.open(File.expand_path(source), "r"), write_stream)
-        end
-      else
-        raise "File '#{source}' does not exist."
+      obj = Aws::S3::Object.new(bucket_name: @credentials[:bucket_name], key: dest + source.split("/").last, :client => client)
+      obj.upload_stream({part_size: 100 * 1024 * 1024, tempfile: true}) do |write_stream|
+        IO.copy_stream(File.open(source, "rb"), write_stream)
       end
     end
     
     def delete(path)
-      path = path.delete_prefix("/")
-      if tree.file_exists?(path)
+      path = path[1..-1]
+      if dir_tree.file_exists?(path)
         client.delete_object(bucket: @credentials[:bucket_name], key: path)
       else
         raise ResourceNotFoundError, path
@@ -123,7 +119,7 @@ module Storage
         # Attempt to access the bucket
         @client.list_objects(bucket: @credentials[:bucket_name], max_keys: 0)
       rescue Aws::S3::Errors::InvalidAccessKeyId, Aws::S3::Errors::SignatureDoesNotMatch
-        raise "Given AWS key ID and secret key do not match, try 'storage configure' to set valid credentials"
+        raise InvalidCredentialsError, "AWS S3" # Set to friendly_name if possible later
       rescue Aws::Errors::InvalidRegionError
         if @credentials[:region] == ""
           msg = "Region not set, try 'storage configure' to set a valid region"
@@ -139,6 +135,10 @@ module Storage
     
     def resource
       @resource ||= Aws::S3::Resource.new(client: client)
+    end
+    
+    def filesize(src)
+      pretty_filesize(client.head_object(bucket: @credentials[:bucket_name], key: src)[:content_length])
     end
   end
 end
