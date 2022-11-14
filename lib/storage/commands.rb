@@ -25,13 +25,12 @@
 # https://github.com/openflighthpc/flight-storage
 #==============================================================================
 require_relative 'commands/configure'
+require_relative 'commands/delete'
 require_relative 'commands/hello'
 require_relative 'commands/list'
-require_relative 'commands/set'
-require_relative 'commands/list'
-require_relative 'commands/push'
 require_relative 'commands/pull'
-require_relative 'commands/delete'
+require_relative 'commands/push'
+require_relative 'commands/set'
 
 module Storage
   module Commands

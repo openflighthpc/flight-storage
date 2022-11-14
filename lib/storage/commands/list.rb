@@ -24,7 +24,6 @@
 # For more information on Flight Storage, please visit:
 # https://github.com/openflighthpc/flight-storage
 #==============================================================================
-require_relative '../client_factory'
 require_relative '../command'
 
 module Storage
