@@ -46,6 +46,10 @@ module Storage
           destination = File.join(File.expand_path(valid_args[1]), dest_file)
         end
 
+        if File.file?(destination)
+          raise LocalResourceExistsError.new(destination)
+        end
+
         filesize = client.filesize(source.to_s)
         puts "Downloading #{dest_file} (#{filesize})..."
 

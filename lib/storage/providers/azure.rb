@@ -25,12 +25,15 @@
 # https://github.com/openflighthpc/flight-storage
 #==============================================================================
 require 'azure/storage/file'
+require 'tempfile'
 
 require_relative '../client'
 require_relative '../tree'
 
 module Storage
   class AzureClient < Client
+    MAX_FILESIZE = 52_428_800 # in bytes
+
     TYPES = {
       file: Azure::Storage::File::File,
       directory: Azure::Storage::File::Directory::Directory
@@ -53,22 +56,29 @@ module Storage
     end
 
     def pull(src, dest)
-      content = get_file(src)
+      filesize = get_file_properties(src)[:content_length]
 
-      # Use File::WRONLY|File::CREAT|File::EXCL flags to
-      # only write to file if it doesn't already exist.
-      # We'll probably want to override this later if we add
-      # a `--force` option
-      File.open(
-        File.expand_path(dest),
-        File::WRONLY|File::CREAT|File::EXCL
-      ) do |f|
-        f.write(content)
+      # If file size is too big, we need to download in chunks
+      # and concatenate the chunks later.
+
+      if filesize > MAX_FILESIZE
+        chunk_download(src, dest, filesize)
+      else
+        content = get_file(src)
+
+        # Use File::WRONLY|File::CREAT|File::EXCL flags to
+        # only write to file if it doesn't already exist.
+        # We'll probably want to override this later if we add
+        # a `--force` option
+        File.open(
+          File.expand_path(dest),
+          'w+'
+        ) do |f|
+          f.write(content)
+        end
       end
 
       return File.expand_path(dest)
-    rescue Errno::EEXIST
-      raise LocalResourceExistsError.new(dest)
     end
 
     def push(src, dest)
@@ -176,6 +186,43 @@ module Storage
       if e.message.include?("resource does not exist")
         raise ResourceNotFoundError.new(src)
       end
+    end
+
+    def chunk_download(src, dest, filesize)
+      dir, file = split_path(src)
+
+      number_of_chunks = (filesize.to_f / MAX_FILESIZE).ceil
+      chunk_files = []
+
+      number_of_chunks.times do |iter|
+        start_range = iter * MAX_FILESIZE
+        end_range = iter == number_of_chunks - 1 ?
+          filesize :
+          (iter +1) * (MAX_FILESIZE - 1)
+
+        options = {
+          start_range: start_range,
+          end_range: end_range
+        }
+
+        puts "Downloading chunk #{iter +1}/#{number_of_chunks}"
+        _, content = client.get_file(
+          file_share_name,
+          dir,
+          file,
+          options
+        )
+
+        tempfile = Tempfile.new("#{file}-#{iter+1}.chunk")
+        chunk_files << tempfile
+
+        tempfile.write(content)
+      end
+
+      File.open(dest, 'w+') do |f|
+        `cat #{chunk_files.map(&:path).join(' ')} > #{dest}`
+      end
+      chunk_files.map(&:unlink)
     end
 
     def query_tree(directory='')
