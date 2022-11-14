@@ -117,10 +117,15 @@ module Storage
 
     private
 
-
-    def delete_file(src)
+    def split_path(src)
       path = src.split('/')
       dir = path.length == 1 ? '' : path[..-2].join('/')
+
+      [dir, path.last]
+    end
+
+    def delete_file(src)
+      dir, file = split_path(src)
 
       # ensure directory exists, as client doesn't tell you and
       # continues as normal if the directory doesn't exist
@@ -129,7 +134,7 @@ module Storage
       client.delete_file(
         file_share_name,
         dir,
-        path.last
+        file
       )
 
       src
@@ -140,8 +145,7 @@ module Storage
     end
 
     def get_file(src)
-      path = src.split('/')
-      dir = path.length == 1 ? '' : path[..-2].join('/')
+      dir, file = split_path(src)
 
       # ensure directory exists, as client doesn't tell you and
       # continues as normal if the directory doesn't exist
@@ -150,7 +154,7 @@ module Storage
       file, content = client.get_file(
         file_share_name,
         dir,
-        path.last
+        file
       )
       
       content
