@@ -82,8 +82,7 @@ module Storage
     end
 
     def push(src, dest)
-      content = File.open(src, 'rb') { |f| f.read }
-      filename = File.basename(src)
+      filesize = File.size(src)
 
       target_dir = File.dirname(dest)
       target_file = File.basename(dest)
@@ -92,17 +91,24 @@ module Storage
         file_share_name,
         target_dir,
         target_file,
-        content.size
+        filesize
       )
 
-      client.put_file_range(
-        file_share_name,
-        target_dir,
-        file.name,
-        0,
-        content.size - 1,
-        content
-      )
+      if filesize > MAX_FILESIZE
+        chunk_upload(src, target_dir, target_file, filesize)
+      else
+        content = File.open(src, 'rb') { |f| f.read }
+        filename = File.basename(src)
+
+        client.put_file_range(
+          file_share_name,
+          target_dir,
+          file.name,
+          0,
+          content.size - 1,
+          content
+        )
+      end
     end
 
     def list(path='', tree: false)
@@ -188,6 +194,30 @@ module Storage
       end
     end
 
+    def chunk_upload(src, target_dir, target_file, filesize)
+      max_upload = 4_000_000
+      number_of_chunks = (filesize.to_f / max_upload).ceil
+
+      File.open(src) do |f|
+        number_of_chunks.times do |iter|
+          to_read = max_upload
+          buffer = f.read(to_read)
+
+          start_range = iter * max_upload
+          end_range = ((iter * max_upload) + buffer.bytesize) -1
+
+          client.put_file_range(
+            file_share_name,
+            target_dir,
+            target_file,
+            start_range,
+            end_range,
+            buffer
+          )
+        end
+      end
+    end
+
     def chunk_download(src, dest, filesize)
       dir, file = split_path(src)
 
@@ -198,14 +228,14 @@ module Storage
         start_range = iter * MAX_FILESIZE
         end_range = iter == number_of_chunks - 1 ?
           filesize :
-          (iter +1) * (MAX_FILESIZE - 1)
+          ((iter + 1) * MAX_FILESIZE) -1
+
 
         options = {
           start_range: start_range,
           end_range: end_range
         }
 
-        puts "Downloading chunk #{iter +1}/#{number_of_chunks}"
         _, content = client.get_file(
           file_share_name,
           dir,
@@ -223,6 +253,7 @@ module Storage
         `cat #{chunk_files.map(&:path).join(' ')} > #{dest}`
       end
       chunk_files.map(&:unlink)
+      p File.size(dest)
     end
 
     def query_tree(directory='')
