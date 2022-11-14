@@ -44,6 +44,10 @@ module Storage
       }
     end
 
+    def filesize(src)
+      pretty_filesize(get_file_properties(src)[:content_length])
+    end
+
     def delete(file)
       delete_file(file)
     end
@@ -122,6 +126,16 @@ module Storage
       dir = path.length == 1 ? '' : path[..-2].join('/')
 
       [dir, path.last]
+    end
+
+    def get_file_properties(src)
+      dir, file = split_path(src)
+
+      client.get_file_properties(
+        file_share_name,
+        dir,
+        file
+      ).properties
     end
 
     def delete_file(src)

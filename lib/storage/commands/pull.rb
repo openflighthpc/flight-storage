@@ -46,6 +46,9 @@ module Storage
           destination = File.join(File.expand_path(valid_args[1]), dest_file)
         end
 
+        filesize = client.filesize(source.to_s)
+        puts "Downloading #{dest_file} (#{filesize})..."
+
         resource = client.pull(source.to_s, destination)
 
         if resource
