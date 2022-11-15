@@ -30,6 +30,8 @@ require_relative '../client'
 require_relative '../tree'
 
 module Storage
+  FRIENDLY_NAME = "Amazon S3"
+
   class AWSClient < Client
     def self.creds_schema
       {
@@ -44,7 +46,7 @@ module Storage
       path = path[1..-1]
       subtree = dir_tree.dig(*path.split("/"))
       msg = ""
-      if use_tree
+      if tree
         msg << subtree.show
       else
         subtree.subdirs.each do |child|
