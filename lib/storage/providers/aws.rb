@@ -120,7 +120,7 @@ module Storage
         # Attempt to access the bucket
         @client.list_objects(bucket: @credentials[:bucket_name], max_keys: 0)
       rescue Aws::S3::Errors::InvalidAccessKeyId, Aws::S3::Errors::SignatureDoesNotMatch
-        raise InvalidCredentialsError, "AWS S3" # Set to friendly_name if possible later
+        raise InvalidCredentialsError, FRIENDLY_NAME
       rescue Aws::Errors::InvalidRegionError
         if @credentials[:region] == ""
           msg = "Region not set, try 'storage configure' to set a valid region"
