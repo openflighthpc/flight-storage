@@ -64,7 +64,6 @@ module Storage
     def pull(source, dest)
       if dir_tree.file_exists?(source)
         source = source[1..-1]
-        puts "Downloading '#{source}' (#{filesize(source)})..."
         resp = client.get_object(response_target: dest, bucket: @credentials[:bucket_name], key: source)
       else
         raise ResourceNotFoundError, source
