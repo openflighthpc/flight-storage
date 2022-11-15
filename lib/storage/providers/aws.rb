@@ -73,7 +73,9 @@ module Storage
     
     def push(source, dest)
       dest = dest.delete_prefix("/")
-      puts dir_tree.file_exists?(dest)
+      if dir_tree.file_exists?(dest)
+        raise ResourceExistsError, dest
+      end
       
       obj = Aws::S3::Object.new(bucket_name: @credentials[:bucket_name], key: dest, :client => client)
       obj.upload_stream({part_size: 100 * 1024 * 1024, tempfile: true}) do |write_stream|
