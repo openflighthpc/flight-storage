@@ -43,7 +43,7 @@ module Storage
     end
     
     def list(path="/", tree: false)
-      path = path[1..-1]
+      path = path.delete_prefix("/")
       subtree = dir_tree.dig(*path.split("/"))
       msg = ""
       if tree
@@ -63,7 +63,7 @@ module Storage
     
     def pull(source, dest)
       if dir_tree.file_exists?(source)
-        source = source[1..-1]
+        source = source.delete_prefix("/")
         resp = client.get_object(response_target: dest, bucket: @credentials[:bucket_name], key: source)
       else
         raise ResourceNotFoundError, source
@@ -72,7 +72,7 @@ module Storage
     end
     
     def push(source, dest)
-      dest = dest[1..-1]
+      dest = dest.delete_prefix("/")
       puts dir_tree.file_exists?(dest)
       
       obj = Aws::S3::Object.new(bucket_name: @credentials[:bucket_name], key: dest, :client => client)
@@ -82,7 +82,7 @@ module Storage
     end
     
     def delete(path)
-      path = path[1..-1]
+      path = path.delete_prefix("/")
       if dir_tree.file_exists?(path)
         client.delete_object(bucket: @credentials[:bucket_name], key: path)
       else
