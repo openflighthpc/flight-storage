@@ -39,9 +39,9 @@ module Storage
         friendly_name: AzureClient::FRIENDLY_NAME
       },
       aws_s3: {
-        klass AWSClient,
+        klass: AWSClient,
         friendly_name: AWSClient::FRIENDLY_NAME
-      },
+      }
     }
 
     def self.for(provider, credentials: {})

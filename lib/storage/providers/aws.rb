@@ -30,9 +30,9 @@ require_relative '../client'
 require_relative '../tree'
 
 module Storage
-  FRIENDLY_NAME = "Amazon S3"
-
   class AWSClient < Client
+    FRIENDLY_NAME = "Amazon S3"
+  
     def self.creds_schema
       {
         access_key: String,
@@ -42,7 +42,7 @@ module Storage
       }
     end
     
-    def list(path, tree: false)
+    def list(path="/", tree: false)
       path = path[1..-1]
       subtree = dir_tree.dig(*path.split("/"))
       msg = ""
@@ -72,9 +72,9 @@ module Storage
     
     def push(source, dest)
       dest = dest[1..-1]
-      dir_tree.dig(*dest.split("/"))
+      puts dir_tree.file_exists?(dest)
       
-      obj = Aws::S3::Object.new(bucket_name: @credentials[:bucket_name], key: dest + source.split("/").last, :client => client)
+      obj = Aws::S3::Object.new(bucket_name: @credentials[:bucket_name], key: dest, :client => client)
       obj.upload_stream({part_size: 100 * 1024 * 1024, tempfile: true}) do |write_stream|
         IO.copy_stream(File.open(source, "rb"), write_stream)
       end
