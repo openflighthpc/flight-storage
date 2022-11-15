@@ -29,6 +29,8 @@ require_relative '../client'
 
 module Storage
   class ExampleClient < Client
+    FRIENDLY_NAME = 'Example'
+
     def self.creds_schema
       {
         required_key: String,

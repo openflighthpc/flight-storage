@@ -29,8 +29,14 @@ require_relative 'providers/example'
 module Storage
   class ClientFactory
     PROVIDERS = {
-      example: { klass: ExampleClient, friendly_name: "Example" },
-      azure: { klass: AzureClient, friendly_name: "Azure" },
+      example: {
+        klass: ExampleClient,
+        friendly_name: ExampleClient::FRIENDLY_NAME
+      },
+      azure: {
+        klass: AzureClient,
+        friendly_name: AzureClient::FRIENDLY_NAME
+      },
     }
 
     def self.for(provider, credentials: {})

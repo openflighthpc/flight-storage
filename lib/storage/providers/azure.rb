@@ -32,6 +32,7 @@ require_relative '../tree'
 
 module Storage
   class AzureClient < Client
+    FRIENDLY_NAME = 'Azure Storage'
     MAX_FILESIZE = 52_428_800 # in bytes
 
     TYPES = {
@@ -288,7 +289,7 @@ module Storage
         storage_access_key: @credentials[:storage_access_key]
       )
     rescue Azure::Storage::Common::InvalidOptionsError => e
-      raise InvalidCredentialsError.new('Azure')
+      raise InvalidCredentialsError.new(FRIENDLY_NAME)
     end
   end
 end
