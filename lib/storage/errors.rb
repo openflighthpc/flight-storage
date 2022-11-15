@@ -28,6 +28,13 @@ module Storage
   StorageError = Class.new(RuntimeError)
   AbstractMethodError = Class.new(StandardError)
 
+  class InvalidCredentialsError < StandardError
+    def initialize(provider)
+      msg = "Invalid credentials given for provider '#{provider}'"
+      super(msg)
+    end
+  end
+
   class ResourceNotFoundError < StandardError
     def initialize(path)
       msg = "Remote resource '#{path}' not found"
@@ -35,9 +42,23 @@ module Storage
     end
   end
 
+  class LocalResourceNotFoundError < StandardError
+    def initialize(path)
+      msg = "Local resource '#{path}' not found"
+      super(msg)
+    end
+  end
+
   class ResourceExistsError < StandardError
     def initialize(path)
       msg = "Remote resource already exists at '#{path}'"
+      super(msg)
+    end
+  end
+
+  class LocalResourceExistsError < StandardError
+    def initialize(path)
+      msg = "Resource already exists at local path '#{path}'"
       super(msg)
     end
   end

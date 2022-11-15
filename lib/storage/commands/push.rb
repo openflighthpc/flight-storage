@@ -33,9 +33,23 @@ module Storage
         # ARGS
         # [ source_file, destination ]
 
-        valid_args = args.map{ |a| a.gsub(%r{/+}, "/") }
-        if client.push(valid_args[0], valid_args[1])
-          puts "File '#{File.expand_path(valid_args[0])}' uploaded to '#{valid_args[1]}'"
+        valid_args = args.map { |a| a&.gsub(%r{/+}, "/") }
+
+        source = File.expand_path(valid_args[0])
+        dest_file = File.basename(source)
+
+        if valid_args[1] == nil
+          # Push to root dir
+          dest_dir = '/'
+          destination = File.join(dest_dir, dest_file)
+        else
+          destination = File.join(valid_args[1], dest_file)
+        end
+
+        resource = client.push(source, destination)
+
+        if resource
+          puts "Resource '#{source}' uploaded to '#{destination}'"
         end
       end
     end

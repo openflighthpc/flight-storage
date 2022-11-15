@@ -33,9 +33,30 @@ module Storage
         # ARGS
         # [ source_file, destination ]
 
-        valid_args = args.map{ |a| a.gsub(%r{/+}, "/") }
-        if client.pull(valid_args[0], valid_args[1])
-          puts "File '#{valid_args[0]}' downloaded to '#{File.expand_path(valid_args[1])}'"
+        valid_args = args.map { |a| a&.gsub(%r{/+}, "/") }
+
+        source = valid_args[0]
+        dest_file = File.basename(source)
+
+        if valid_args[1] == nil
+          # Pull to current directory
+          dest_dir = Dir.pwd
+          destination = File.join(dest_dir, dest_file)
+        else
+          destination = File.join(File.expand_path(valid_args[1]), dest_file)
+        end
+
+        if File.file?(destination)
+          raise LocalResourceExistsError.new(destination)
+        end
+
+        filesize = client.filesize(source)
+        puts "Downloading #{dest_file} (#{filesize})..."
+
+        resource = client.pull(source, destination)
+
+        if resource
+          puts "Resource '#{source}' saved to '#{resource}'"
         end
       end
     end
