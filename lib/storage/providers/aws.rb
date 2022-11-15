@@ -68,6 +68,7 @@ module Storage
       else
         raise ResourceNotFoundError, source
       end
+      dest
     end
     
     def push(source, dest)
