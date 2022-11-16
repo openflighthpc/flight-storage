@@ -1,22 +1,51 @@
 # Flight Storage
 
-%SUMMARY%
+Command-line cloud storage interaction.
 
 ## Overview
 
-What is it?
+Flight Storage is a command-line tool for interacting with cloud storage solutions. It acts as a wrapper for various cloud providers' object storage technologies, with uniform CRUD controls across each of them.
 
 ## Installation
 
-How is it installed?
+### Manual installation
+
+#### Prerequisites
+Flight Profile is developed and tested with Ruby version 2.7.1 and bundler 2.1.4. Other versions may work but currently are not officially supported.
+
+#### Steps
+
+The following will install from source using Git. The `master` branch is the current development version and may not be appropriate for a production installation. Instead a tagged version should be checked out.
+
+```bash
+git clone https://github.com/openflighthpc/flight-storage.git
+cd flight-storage
+git checkout <tag>
+bundle install --path=vendor
+```
 
 ## Configuration
 
-Any required or optional configuration?
+Run `bin/storage set` (source) / `flight storage set` (package) to choose your cloud storage provider.
+
+Flight Storage currently supports the following cloud storage providers:
+
+- Amazon S3 ([setup](docs/aws_s3.md))
+- Azure File Service ([setup](docs/azure.md))
+
+Please follow the setup guide for your chosen provider.
 
 ## Operation
 
-How do you use it?
+A brief usage guide is given here. See the `help` command for more in depth details and information specific to each command.
+
+List the topmost directory in cloud with `storage list`. List more specific subdirectories by providing the path to the subdirectory as an argument.
+
+Upload a file to the cloud with `storage push FILE`. Absolute paths and relative paths are both accepted when specifying a file. Upload the file to a more specific subdirectory by providing the target directory as a second (optional) argument.
+
+Download a remote file to your system with `storage pull FILE`. An absolute path to the remote file is required. By default, the file is downloaded to your current working directory. You may specify a target directory by providing the target directory as a second (optional) argument (absolute/relative paths accepted).
+
+Delete a file from the cloud with `storage delete FILE`.
 
 # Contributing
 

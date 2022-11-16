@@ -39,7 +39,7 @@ module Storage
     program :application, "Flight Storage"
     program :name, PROGRAM_NAME
     program :version, "v#{Storage::VERSION}"
-    program :description, '%DESCRIPTION%'
+    program :description, 'Command-line cloud storage interaction'
     program :help_paging, false
     default_command :help
     silent_trace!
