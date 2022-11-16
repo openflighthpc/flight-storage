@@ -46,6 +46,13 @@ module Storage
           destination = File.join(valid_args[1], dest_file)
         end
 
+        if !File.file?(source)
+          raise LocalResourceNotFoundError.new(source)
+        end
+
+        filesize = client.pretty_filesize(File.size(source))
+        puts "Uploading #{File.basename(source)} (#{filesize})"
+        
         resource = client.push(source, destination)
 
         if resource
