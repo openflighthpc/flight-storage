@@ -35,7 +35,7 @@ module Storage
 
     def initialize(args, options, command_name = nil)
       @args = args.freeze
-      @options = OpenStruct.new(options.__hash__)
+      @options = OpenStruct.new(options)
     end
 
     # this wrapper is here to later enable error handling &/ logging

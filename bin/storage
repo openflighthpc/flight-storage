@@ -38,7 +38,7 @@ begin
   require 'storage/cli'
   Dir.chdir(ENV.fetch('FLIGHT_CWD','.'))
   OpenFlight.set_standard_env rescue nil
-  Storage::CLI.run!
+  Storage::CLI.run!(*ARGV)
 rescue Interrupt
   if Kernel.const_defined?(:Paint)
     $stderr.puts "\n#{Paint['WARNING', :underline, :yellow]}: Cancelled by user"

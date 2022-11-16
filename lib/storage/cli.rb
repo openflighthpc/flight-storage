@@ -35,24 +35,13 @@ module Storage
   module CLI
     PROGRAM_NAME = ENV.fetch('FLIGHT_PROGRAM_NAME','storage')
 
-    extend Commander::Delegates
+    extend Commander::CLI
     program :application, "Flight Storage"
     program :name, PROGRAM_NAME
     program :version, "v#{Storage::VERSION}"
     program :description, 'Command-line cloud storage interaction'
     program :help_paging, false
     default_command :help
-    silent_trace!
-
-    error_handler do |runner, e|
-      case e
-      when TTY::Reader::InputInterrupt
-        $stderr.puts "\n#{Paint['WARNING', :underline, :yellow]}: Cancelled by user"
-        exit(130)
-      else
-        Commander::Runner::DEFAULT_ERROR_HANDLER.call(runner, e)
-      end
-    end
 
     if ENV['TERM'] !~ /^xterm/ && ENV['TERM'] !~ /rxvt/
       Paint.mode = 0

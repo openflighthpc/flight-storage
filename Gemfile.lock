@@ -8,6 +8,22 @@ GIT
 GEM
   remote: https://rubygems.org/
   specs:
+    aws-eventstream (1.2.0)
+    aws-partitions (1.660.0)
+    aws-sdk-core (3.167.0)
+      aws-eventstream (~> 1, >= 1.0.2)
+      aws-partitions (~> 1, >= 1.651.0)
+      aws-sigv4 (~> 1.5)
+      jmespath (~> 1, >= 1.6.1)
+    aws-sdk-kms (1.59.0)
+      aws-sdk-core (~> 3, >= 3.165.0)
+      aws-sigv4 (~> 1.1)
+    aws-sdk-s3 (1.117.1)
+      aws-sdk-core (~> 3, >= 3.165.0)
+      aws-sdk-kms (~> 1)
+      aws-sigv4 (~> 1.4)
+    aws-sigv4 (1.5.2)
+      aws-eventstream (~> 1, >= 1.0.2)
     azure-storage-common (2.0.4)
       faraday (~> 1.0)
       faraday_middleware (~> 1.0, >= 1.0.0.rc1)
@@ -16,9 +32,10 @@ GEM
     azure-storage-file (2.0.4)
       azure-storage-common (~> 2.0)
       nokogiri (~> 1, >= 1.10.8)
-    commander-openflighthpc (1.1.2)
-      highline (~> 1.7.2)
+    commander-openflighthpc (2.2.0)
+      highline (> 1.7.2)
       paint (~> 2.1.0)
+      slop (~> 4.8)
     connection_pool (2.3.0)
     faraday (1.10.2)
       faraday-em_http (~> 1.0)
@@ -45,7 +62,8 @@ GEM
     faraday-retry (1.0.3)
     faraday_middleware (1.2.0)
       faraday (~> 1.0)
-    highline (1.7.10)
+    highline (2.0.3)
+    jmespath (1.6.1)
     mini_portile2 (2.8.0)
     multipart-post (2.2.3)
     net-http-persistent (4.0.1)
@@ -58,6 +76,7 @@ GEM
       tty-color (~> 0.5)
     racc (1.6.0)
     ruby2_keywords (0.0.5)
+    slop (4.9.3)
     tty-color (0.6.0)
     tty-config (0.6.0)
     tty-cursor (0.7.1)
@@ -76,8 +95,9 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
+  aws-sdk-s3
   azure-storage-file
-  commander-openflighthpc (~> 1.1.0)
+  commander-openflighthpc (~> 2.2.0)
   tty-config
   tty-prompt
   tty-tree

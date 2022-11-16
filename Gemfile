@@ -27,7 +27,7 @@
 #==============================================================================
 source 'https://rubygems.org'
 
-gem 'commander-openflighthpc', '~> 1.1.0'
+gem 'commander-openflighthpc', '~> 2.2.0'
 gem 'tty-prompt'
 gem 'tty-config'
 gem 'tty-tree'
@@ -35,3 +35,6 @@ gem 'xdg', git: 'https://github.com/bkuhlmann/xdg', tag: '3.0.2'
 
 # Azure provider gems
 gem 'azure-storage-file'
+
+# AWS provider gems
+gem 'aws-sdk-s3'

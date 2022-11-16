@@ -25,6 +25,7 @@
 
 require_relative 'providers/azure'
 require_relative 'providers/example'
+require_relative 'providers/aws'
 
 module Storage
   class ClientFactory
@@ -37,6 +38,10 @@ module Storage
         klass: AzureClient,
         friendly_name: AzureClient::FRIENDLY_NAME
       },
+      aws_s3: {
+        klass: AWSClient,
+        friendly_name: AWSClient::FRIENDLY_NAME
+      }
     }
 
     def self.for(provider, credentials: {})
