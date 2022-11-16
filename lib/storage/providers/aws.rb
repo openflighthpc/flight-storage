@@ -64,7 +64,12 @@ module Storage
     def pull(source, dest)
       if dir_tree.file_exists?(source)
         source = source.delete_prefix("/")
-        resp = client.get_object(response_target: dest, bucket: @credentials[:bucket_name], key: source)
+        
+        resp = client.get_object(
+                 response_target: dest, 
+                 bucket: @credentials[:bucket_name], 
+                 key: source
+               )
       else
         raise ResourceNotFoundError, source
       end
@@ -77,7 +82,11 @@ module Storage
         raise ResourceExistsError, dest
       end
       
-      obj = Aws::S3::Object.new(bucket_name: @credentials[:bucket_name], key: dest, :client => client)
+      obj = Aws::S3::Object.new(
+              bucket_name: @credentials[:bucket_name],
+              key: dest,
+              :client => client)
+              
       obj.upload_stream({part_size: 100 * 1024 * 1024, tempfile: true}) do |write_stream|
         IO.copy_stream(File.open(source, "rb"), write_stream)
       end
@@ -86,7 +95,10 @@ module Storage
     def delete(path)
       path = path.delete_prefix("/")
       if dir_tree.file_exists?(path)
-        client.delete_object(bucket: @credentials[:bucket_name], key: path)
+        client.delete_object(
+          bucket: @credentials[:bucket_name],
+          key: path
+        )
       else
         raise ResourceNotFoundError, path
       end
@@ -95,18 +107,37 @@ module Storage
     # Convert the bucket contents into a tree-like hash
     def to_hash(prefix)
       children = []
-      resp = client.list_objects(bucket: @credentials[:bucket_name], delimiter: "/", prefix: prefix)
+      
+      resp = client.list_objects_v2(
+               bucket: @credentials[:bucket_name],
+               delimiter: "/",
+               prefix: prefix
+             )
+      
       dirs = resp.common_prefixes.map {|dir| dir = dir.prefix.split("/").last }
       while resp.is_truncated
-        marker = resp.next_marker
-        resp = client.list_objects(bucket: @credentials[:bucket_name], delimiter: "/", prefix: prefix, marker: marker)
+        puts "TRUNCATED"
+        marker = resp.next_continuation_token
+        
+        resp = client.list_objects_v2(
+                 bucket: @credentials[:bucket_name],
+                 delimiter: "/",
+                 prefix: prefix,
+                 continuation_token: marker
+               )
+        
         dirs += resp.common_prefixes.map {|dir| dir = dir.prefix.split("/").last }
       end
       dirs&.each do |dir|
         children << to_hash(prefix + dir + "/")
       end
       
-      files = resource.bucket(@credentials[:bucket_name]).objects(delimiter: "/", prefix: prefix, start_after: prefix)
+      files = resource.bucket(@credentials[:bucket_name]).objects(
+                delimiter: "/",
+                prefix: prefix,
+                start_after: prefix
+              )
+      
       files.collect(&:key)&.each do |file|
         children << file.split("/").last
       end
@@ -121,7 +152,10 @@ module Storage
           region: @credentials[:region]
         )
         # Attempt to access the bucket
-        @client.list_objects(bucket: @credentials[:bucket_name], max_keys: 0)
+        @client.list_objects_v2(
+          bucket: @credentials[:bucket_name],
+          max_keys: 0
+        )
       rescue Aws::S3::Errors::InvalidAccessKeyId, Aws::S3::Errors::SignatureDoesNotMatch
         raise InvalidCredentialsError, FRIENDLY_NAME
       rescue Aws::Errors::InvalidRegionError
