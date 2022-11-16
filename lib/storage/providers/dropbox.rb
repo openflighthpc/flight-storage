@@ -116,6 +116,7 @@ module Storage
       
       dirs = resp.common_prefixes.map {|dir| dir = dir.prefix.split("/").last }
       while resp.is_truncated
+        puts "TRUNCATED"
         marker = resp.next_continuation_token
         
         resp = client.list_objects_v2(
