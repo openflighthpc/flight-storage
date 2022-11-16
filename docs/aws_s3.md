@@ -32,11 +32,15 @@ If you plan to make a large number of buckets, you can use tags to help organise
 
 ### Advanced settings
 
-* Disable
+* Object Lock - Disable
 
 ---
 
 Click `Create bucket`
+
+## Obtaining an Access Key
+
+When logged in to the AWS console, choose `Security Credentials` from your account's dropdown selection in the top right corner. Under `AWS IAM credentials` select `Create access key`. **Do not close the pop-up until you have retrieved your secret access key, as this may not be obtained later**. Take note of the Access Key ID and Secret Access Key, as these are required credentials for Flight Storage.
 
 ## Configure the S3 provider in Flight Storage
 
