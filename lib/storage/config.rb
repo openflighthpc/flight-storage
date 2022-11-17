@@ -91,7 +91,7 @@ module Storage
       end
 
       def provider
-        provider = data.fetch(:provider)
+        provider = user_data.fetch(:provider)
         if provider.nil?
           raise "No provider set; please run `storage configure`"
         end
