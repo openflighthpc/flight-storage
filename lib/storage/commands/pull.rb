@@ -33,7 +33,9 @@ module Storage
         # ARGS
         # [ source_file, destination ]
 
-        valid_args = args.map { |a| a&.prepend("/")&.gsub(%r{/+}, "/") }
+        valid_args = args.dup
+        valid_args[0] = valid_args[0].dup.prepend("/")
+        valid_args = valid_args.map { |a| a&.gsub(%r{/+}, "/") }
 
         source = valid_args[0]
         dest_file = File.basename(source)
