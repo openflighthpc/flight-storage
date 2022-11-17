@@ -57,7 +57,7 @@ module Storage
       def user_data
         @user_data ||= TTY::Config.new.tap do |cfg|
           xdg_config.all.map do |p|
-            File.join(p, _DIR_SUFFIX)
+            File.join(p, STORAGE_DIR_SUFFIX)
           end.each(&cfg.method(:append_path))
           begin
             cfg.read

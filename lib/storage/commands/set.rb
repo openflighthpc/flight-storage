@@ -39,7 +39,7 @@ module Storage
         )
 
         Config.data.set(:provider, value: provider)
-        Config.save_data
+        Config.save_user_data
       end
 
       private
