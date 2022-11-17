@@ -38,7 +38,7 @@ module Storage
           choices
         )
 
-        Config.data.set(:provider, value: provider)
+        Config.user_data.set(:provider, value: provider)
         Config.save_user_data
       end
 
