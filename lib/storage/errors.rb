@@ -34,6 +34,13 @@ module Storage
       super(msg)
     end
   end
+  
+  class ExpiredCredentialsError < StandardError
+    def initialize(provider)
+      msg = "Credentials for '#{provider}' have expired."
+      super(msg)
+    end
+  end
 
   class ResourceNotFoundError < StandardError
     def initialize(path)
