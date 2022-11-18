@@ -60,7 +60,7 @@ module Storage
     end
     
     def dir_tree
-      @dir_tree = Tree.new("/", to_hash(""))
+      @dir_tree ||= Tree.new("/", to_hash(""))
     end
     
     def pull(source, dest)
