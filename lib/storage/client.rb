@@ -64,7 +64,7 @@ module Storage
 
       shape = self.class.creds_schema
 
-      (shape.keys - creds.keys).empty? && all? { |k, v| shape[k] === v }
+      (shape.keys - creds.keys).empty? && creds.all? { |k, v| shape[k] === v }
     end
   end
 end
