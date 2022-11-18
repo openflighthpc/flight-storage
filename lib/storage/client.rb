@@ -59,15 +59,12 @@ module Storage
 
     private
 
-    def validate_credentials(hash)
-      hash.has_shape?(self.class.creds_schema)
-    end
-  end
-end
+    def validate_credentials(creds)
+      return false if !creds
 
-class Hash
-  def has_shape?(shape)
-    # Currently only supports single level hashes
-    (shape.keys - self.keys).empty? && all? { |k, v| shape[k] === v }
+      shape = self.class.creds_schema
+
+      (shape.keys - creds.keys).empty? && all? { |k, v| shape[k] === v }
+    end
   end
 end
