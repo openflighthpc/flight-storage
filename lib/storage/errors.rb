@@ -30,14 +30,14 @@ module Storage
 
   class InvalidCredentialsError < StandardError
     def initialize(provider)
-      msg = "Invalid credentials given for provider '#{provider}'"
+      msg = "Invalid credentials given for provider '#{provider}'. Try 'storage configure' to set new credentials."
       super(msg)
     end
   end
   
   class ExpiredCredentialsError < StandardError
     def initialize(provider)
-      msg = "Credentials for '#{provider}' have expired."
+      msg = "Credentials for '#{provider}' have expired. Try 'storage configure' to set new credentials."
       super(msg)
     end
   end
