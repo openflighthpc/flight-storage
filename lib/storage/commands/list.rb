@@ -35,7 +35,7 @@ module Storage
         # OPTS
         # [ tree ]
 
-        validated = args[0]&.prepend("/")&.gsub(%r{/+}, "/")
+        validated = "/#{args[0]}"&.gsub(%r{/+}, "/")
         puts client.list(*validated, tree: @options.tree)
       end
     end

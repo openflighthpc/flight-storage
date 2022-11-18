@@ -33,7 +33,7 @@ module Storage
         # ARGS:
         # [ target_file ]
         
-        validated = args[0].prepend("/").gsub(%r{/+}, "/")
+        validated = "/#{args[0]}".gsub(%r{/+}, "/")
         if client.delete(validated)
           puts "File at #{validated} deleted"
         end

@@ -254,7 +254,6 @@ module Storage
         `cat #{chunk_files.map(&:path).join(' ')} > #{dest}`
       end
       chunk_files.map(&:unlink)
-      p File.size(dest)
     end
 
     def query_tree(directory='')
