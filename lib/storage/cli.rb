@@ -116,5 +116,13 @@ module Storage
       c.description = "Delete a given file from the cloud"
     end
     alias_command :rm, :delete
+    
+    command :mkdir do |c|
+      cli_syntax(c, "DIRECTORY")
+      c.summary = "Create a directory in the cloud"
+      c.action Commands, :mkdir
+      c.description = "Creates a directory in the cloud"
+      c.option "-p", "--parents", "Create parent directories if they don't already exist"
+    end
   end
 end

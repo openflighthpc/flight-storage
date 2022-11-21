@@ -27,7 +27,7 @@
 
 module Storage
   class Client
-    ACTIONS = %w(list push pull delete)
+    ACTIONS = %w(list push pull delete mkdir)
 
     ACTIONS.each do |action|
       define_method(action) do |*args, **kwargs|
