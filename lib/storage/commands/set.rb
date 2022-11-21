@@ -45,7 +45,7 @@ module Storage
       private
 
       def choices
-        ClientFactory::PROVIDERS.map do |k, v|
+        ClientFactory::CLIENTS.map do |k, v|
           { v[:friendly_name] => k.to_s }
         end
       end

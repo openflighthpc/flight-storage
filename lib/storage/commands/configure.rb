@@ -34,7 +34,7 @@ module Storage
   module Commands
     class Configure < Command
       def run
-        klass = ClientFactory::PROVIDERS[Config.provider][:klass]
+        klass = ClientFactory::CLIENTS[Config.provider][:klass]
         questions = to_questions(klass)
         answers = prompt.collect do
           questions.each do |question|

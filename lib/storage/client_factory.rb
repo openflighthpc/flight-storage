@@ -23,12 +23,12 @@
 # https://github.com/openflighthpc/flight-storage
 #==============================================================================
 
-require_relative 'providers/azure'
-require_relative 'providers/aws'
+require_relative 'clients/azure'
+require_relative 'clients/aws'
 
 module Storage
   class ClientFactory
-    PROVIDERS = {
+    CLIENTS = {
       azure: {
         klass: AzureClient,
         friendly_name: AzureClient::FRIENDLY_NAME
@@ -39,15 +39,15 @@ module Storage
       }
     }
 
-    def self.for(provider, credentials: {})
-      raise "Invalid provider type" unless valid_provider?(provider)
-      (PROVIDERS[provider][:klass]).new(credentials)
+    def self.for(client, credentials: {})
+      raise "Invalid client type" unless valid_client?(client)
+      (CLIENTS[client][:klass]).new(credentials)
     end
 
     private
 
-    def self.valid_provider?(provider)
-      PROVIDERS.include?(provider)
+    def self.valid_client?(client)
+      CLIENTS.include?(client)
     end
   end
 end
