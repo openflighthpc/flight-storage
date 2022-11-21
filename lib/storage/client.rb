@@ -50,10 +50,6 @@ module Storage
       '%.1f %s' % [size.to_f / 1024 ** exp, units[exp]]
     end
 
-    def configured?
-
-    end
-
     attr_reader :credentials
 
     def initialize(credentials = {})

@@ -27,14 +27,13 @@
 require 'tty-prompt'
 require 'yaml'
 
-require_relative '../client_factory'
 require_relative '../command'
 
 module Storage
   module Commands
     class Configure < Command
       def run
-        klass = ClientFactory::CLIENTS[Config.provider][:klass]
+        klass = client.class
         questions = to_questions(klass)
         answers = prompt.collect do
           questions.each do |question|

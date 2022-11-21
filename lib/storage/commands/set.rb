@@ -26,7 +26,7 @@
 #==============================================================================
 require 'tty-prompt'
 
-require_relative '../client_factory'
+require_relative '../provider'
 require_relative '../command'
 
 module Storage
@@ -45,7 +45,7 @@ module Storage
       private
 
       def choices
-        ClientFactory::CLIENTS.map do |k, v|
+        Provider::PROVIDERS.map do |k, v|
           { v[:friendly_name] => k.to_s }
         end
       end

@@ -19,35 +19,55 @@
 # You should have received a copy of the Eclipse Public License 2.0
 # along with Flight Storage. If not, see:
 #
+#  https://opensource.org/licenses/EPL-2.0
+#
 # For more information on Flight Storage, please visit:
 # https://github.com/openflighthpc/flight-storage
 #==============================================================================
 
-require_relative 'clients/azure'
-require_relative 'clients/aws'
+require_relative 'config'
+require_relative 'clients/aws.rb'
+require_relative 'clients/azure.rb'
 
 module Storage
-  class ClientFactory
-    CLIENTS = {
+  class Provider
+    PROVIDERS = {
       azure: {
-        klass: AzureClient,
+        client: AzureClient,
         friendly_name: AzureClient::FRIENDLY_NAME
       },
       aws_s3: {
-        klass: AWSClient,
+        client: AWSClient,
         friendly_name: AWSClient::FRIENDLY_NAME
       }
     }
 
-    def self.for(client, credentials: {})
-      raise "Invalid client type" unless valid_client?(client)
-      (CLIENTS[client][:klass]).new(credentials)
+    def client
+      PROVIDERS[@name][:client].new(credentials)
     end
 
-    private
+    def configured?
+      !!client
+    end
 
-    def self.valid_client?(client)
-      CLIENTS.include?(client)
+    def credentials
+      filepath = File.join(Config.credentials_dir, "#{@name.to_s}.yml")
+      FileUtils.touch(filepath)
+
+      YAML.load_file(filepath)
+    end
+
+    def friendly_name
+      PROVIDERS[@name][:friendly_name]
+    end
+
+    def name
+      @name.to_s
+    end
+
+    def initialize(name)
+      raise "Invalid provider" unless PROVIDERS.keys.include?(name)
+      @name = name
     end
   end
 end
