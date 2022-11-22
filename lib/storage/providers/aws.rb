@@ -175,6 +175,7 @@ module Storage
     end
     
     def filesize(src)
+      src = src.delete_prefix("/")
       pretty_filesize(client.head_object(bucket: @credentials[:bucket_name], key: src)[:content_length])
     end
   end
