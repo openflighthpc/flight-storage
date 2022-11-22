@@ -35,7 +35,7 @@ module Storage
         # OPTS
         # [ parents ]
         
-        validated = "/#{args[0]}"&.gsub(%r{/+}, "/")
+        validated = "/#{args[0]}/"&.gsub(%r{/+}, "/")
 
         if client.mkdir(validated, @options.parents)
           puts "Directory '#{validated}' created."
