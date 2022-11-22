@@ -104,6 +104,30 @@ module Storage
       end
     end
     
+    def mkdir(path, make_parents)
+      path = path.delete_prefix("/")
+      if make_parents
+        dirs = path.delete_prefix("/").split("/")
+        puts dirs.inspect
+        index = 0
+        while index < dirs.size
+          client.put_object(
+            bucket: @credentials[:bucket_name],
+            key: (dirs[0..index].join("/") + "/")
+          )
+          puts (dirs[0..index].join("/") + "/")
+          index += 1
+        end
+      
+      else
+        dir_tree.dig(*path.split("/")[0..-2])
+        client.put_object(
+          bucket: @credentials[:bucket_name],
+          key: path
+        )
+      end
+    end
+    
     # Convert the bucket contents into a tree-like hash
     def to_hash(prefix)
       children = []
