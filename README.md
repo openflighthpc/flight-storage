@@ -26,7 +26,7 @@ bundle install --path=vendor
 
 ## Configuration
 
-Run `bin/storage set` (source) / `flight storage set` (package) to choose your cloud storage provider.
+`storage avail` will list the available storage providers. Run `bin/storage set` (source) / `flight storage set` (package) to choose your cloud storage provider.
 
 Flight Storage currently supports the following cloud storage providers:
 

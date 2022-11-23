@@ -35,10 +35,10 @@ module Storage
         providers = Provider::PROVIDERS.keys.map { |p| Provider.new(p) }
 
         t = Table.new
-        t.headers('Provider', 'Description', 'State')
+        t.headers('Provider', 'State')
         providers.each do |p|
           configured = p.configured? ? 'Configured' : 'Unconfigured'
-          t.row(p.name, p.description, configured)
+          t.row(p.friendly_name, configured)
         end
         t.emit
       end
