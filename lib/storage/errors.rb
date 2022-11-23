@@ -62,4 +62,11 @@ module Storage
       super(msg)
     end
   end
+  
+  class DirectoryNotEmptyError < StandardError
+    def initialize(path)
+      msg = "Directory '#{path}' is non-empty, use the '-r' option to delete it and all contents"
+      super(msg)
+    end
+  end
 end
