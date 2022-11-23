@@ -124,5 +124,13 @@ module Storage
       c.description = "Creates a directory in the cloud"
       c.option "-p", "--parents", "Create parent directories if they don't already exist"
     end
+    
+    command :rmdir do |c|
+      cli_syntax(c, "DIRECTORY")
+      c.summary = "Delete a directory from the cloud"
+      c.action Commands, :rmdir
+      c.description = "Deletes a directory from the cloud"
+      c.option "-r", "--recursive", "Also delete contents of directory"
+    end
   end
 end
