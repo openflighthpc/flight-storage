@@ -47,7 +47,7 @@ module Storage
     end
 
     def configured?
-      !!client
+      client.validate_credentials
     end
 
     def credentials

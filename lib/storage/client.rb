@@ -53,11 +53,8 @@ module Storage
     attr_reader :credentials
 
     def initialize(credentials = {})
-      raise "Invalid credentials" unless validate_credentials(credentials)
       @credentials = credentials
     end
-
-    private
 
     def validate_credentials(creds)
       return false if !creds
