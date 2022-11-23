@@ -106,19 +106,19 @@ module Storage
     
     def mkdir(path, make_parents)
       path = path.delete_prefix("/")
-      if make_parents
-        dirs = path.delete_prefix("/").split("/")
-        puts dirs.inspect
+      if resource.bucket(@credentials[:bucket_name]).object(path).exists?
+        raise ResourceExistsError, path
+      elsif make_parents
+        dirs = path.split("/")
         index = 0
         while index < dirs.size
           client.put_object(
             bucket: @credentials[:bucket_name],
             key: (dirs[0..index].join("/") + "/")
           )
-          puts (dirs[0..index].join("/") + "/")
           index += 1
         end
-      
+        true
       else
         dir_tree.dig(*path.split("/")[0..-2])
         client.put_object(
