@@ -128,6 +128,28 @@ module Storage
       end
     end
     
+    def rmdir(path, recursive)
+      path = path.delete_prefix("/")
+      if resource.bucket(@credentials[:bucket_name]).object(path).exists?
+        objs = resource.bucket(@credentials[:bucket_name]).objects({prefix: path})
+        if recursive
+          objs.batch_delete!
+          true
+        else
+          dirs = path.split("/")
+          if dir_tree.dig(*dirs).to_hash[dirs.last].empty?
+            objs.batch_delete!
+            true
+          else
+            raise DirectoryNotEmptyError, path
+          end
+        end
+      else
+        raise ResourceNotFoundError, path
+      end
+    end
+      
+    
     # Convert the bucket contents into a tree-like hash
     def to_hash(prefix)
       children = []
