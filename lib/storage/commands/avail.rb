@@ -24,44 +24,23 @@
 # For more information on Flight Storage, please visit:
 # https://github.com/openflighthpc/flight-storage
 #==============================================================================
+require_relative '../command'
+require_relative '../provider'
+require_relative '../table'
 
 module Storage
-  class Client
-    ACTIONS = %w(list push pull delete)
+  module Commands
+    class Avail < Command
+      def run
+        providers = Provider::PROVIDERS.keys.map { |p| Provider.new(p) }
 
-    ACTIONS.each do |action|
-      define_method(action) do |*args, **kwargs|
-        raise AbstractMethodError.new "Action not defined for provider"
-      end
-    end
-
-    def self.creds_schema
-      Hash.new
-    end
-
-    def pretty_filesize(size)
-      units = %w[B KiB MiB GiB]
-      return '0.0 B' if size == 0
-
-      exp = (Math.log(size) / Math.log(1024)).to_i
-      exp += 1 if (size.to_f / 1024 ** exp >= 1024 - 0.05)
-      exp = units.size - 1 if exp > units.size - 1
-
-      '%.1f %s' % [size.to_f / 1024 ** exp, units[exp]]
-    end
-
-    attr_reader :credentials
-
-    def initialize(credentials)
-      @credentials = credentials
-    end
-
-    def validate_credentials
-      return false if !@credentials
-      shape = self.class.creds_schema
-
-      (shape.keys - @credentials.keys).empty? && @credentials.all? do |k, v|
-        shape[k] === v
+        t = Table.new
+        t.headers('Provider', 'Description', 'State')
+        providers.each do |p|
+          configured = p.configured? ? 'Configured' : 'Unconfigured'
+          t.row(p.name, p.description, configured)
+        end
+        t.emit
       end
     end
   end

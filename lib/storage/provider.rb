@@ -33,10 +33,12 @@ module Storage
   class Provider
     PROVIDERS = {
       azure: {
+        description: 'Azure File Service',
         client: AzureClient,
         friendly_name: AzureClient::FRIENDLY_NAME
       },
       aws_s3: {
+        description: 'AWS S3',
         client: AWSClient,
         friendly_name: AWSClient::FRIENDLY_NAME
       }
@@ -44,6 +46,10 @@ module Storage
 
     def client
       PROVIDERS[@name][:client].new(credentials)
+    end
+
+    def description
+      PROVIDERS[@name][:description]
     end
 
     def configured?

@@ -57,6 +57,12 @@ module Storage
       end
     end
 
+    command :avail do |c|
+      cli_syntax(c)
+      c.summary = 'List available providers'
+      c.action Commands, :avail
+    end
+
     command :configure do |c|
       cli_syntax(c)
       c.summary = 'Configure credentials for chosen cloud storage provider'
