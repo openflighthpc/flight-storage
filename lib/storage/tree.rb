@@ -77,7 +77,7 @@ module Storage
 
       if !subdir
         # No such subdirectory
-        raise "The directory '#{File.join(*path)}' could not be found"
+        raise ResourceNotFoundError, File.join(*path).to_s
       elsif iter + 1 == path.length
         # Base case
         return subdir
