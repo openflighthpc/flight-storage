@@ -19,35 +19,29 @@
 # You should have received a copy of the Eclipse Public License 2.0
 # along with Flight Storage. If not, see:
 #
+#  https://opensource.org/licenses/EPL-2.0
+#
 # For more information on Flight Storage, please visit:
 # https://github.com/openflighthpc/flight-storage
 #==============================================================================
-
-require_relative 'providers/azure'
-require_relative 'providers/aws'
+require_relative '../command'
+require_relative '../provider'
+require_relative '../table'
 
 module Storage
-  class ClientFactory
-    PROVIDERS = {
-      azure: {
-        klass: AzureClient,
-        friendly_name: AzureClient::FRIENDLY_NAME
-      },
-      aws_s3: {
-        klass: AWSClient,
-        friendly_name: AWSClient::FRIENDLY_NAME
-      }
-    }
+  module Commands
+    class Avail < Command
+      def run
+        providers = Provider::PROVIDERS.keys.map { |p| Provider.new(p) }
 
-    def self.for(provider, credentials: {})
-      raise "Invalid provider type" unless valid_provider?(provider)
-      (PROVIDERS[provider][:klass]).new(credentials)
-    end
-
-    private
-
-    def self.valid_provider?(provider)
-      PROVIDERS.include?(provider)
+        t = Table.new
+        t.headers('Provider', 'State')
+        providers.each do |p|
+          configured = p.configured? ? 'Configured' : 'Unconfigured'
+          t.row(p.friendly_name, configured)
+        end
+        t.emit
+      end
     end
   end
 end

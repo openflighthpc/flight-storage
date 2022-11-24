@@ -31,6 +31,7 @@ gem 'commander-openflighthpc', '~> 2.2.0'
 gem 'tty-prompt'
 gem 'tty-config'
 gem 'tty-tree'
+gem 'tty-table'
 gem 'xdg', git: 'https://github.com/bkuhlmann/xdg', tag: '3.0.2'
 
 # Azure provider gems

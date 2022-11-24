@@ -25,44 +25,55 @@
 # https://github.com/openflighthpc/flight-storage
 #==============================================================================
 
+require_relative 'config'
+require_relative 'clients/aws.rb'
+require_relative 'clients/azure.rb'
+
 module Storage
-  class Client
-    ACTIONS = %w(list push pull delete)
+  class Provider
+    PROVIDERS = {
+      azure: {
+        description: 'Azure File Service',
+        client: AzureClient,
+        friendly_name: AzureClient::FRIENDLY_NAME
+      },
+      aws_s3: {
+        description: 'AWS S3',
+        client: AWSClient,
+        friendly_name: AWSClient::FRIENDLY_NAME
+      }
+    }
 
-    ACTIONS.each do |action|
-      define_method(action) do |*args, **kwargs|
-        raise AbstractMethodError.new "Action not defined for provider"
-      end
+    def client
+      PROVIDERS[@name][:client].new(credentials)
     end
 
-    def self.creds_schema
-      Hash.new
+    def description
+      PROVIDERS[@name][:description]
     end
 
-    def pretty_filesize(size)
-      units = %w[B KiB MiB GiB]
-      return '0.0 B' if size == 0
-
-      exp = (Math.log(size) / Math.log(1024)).to_i
-      exp += 1 if (size.to_f / 1024 ** exp >= 1024 - 0.05)
-      exp = units.size - 1 if exp > units.size - 1
-
-      '%.1f %s' % [size.to_f / 1024 ** exp, units[exp]]
+    def configured?
+      client.validate_credentials
     end
 
-    attr_reader :credentials
+    def credentials
+      filepath = File.join(Config.credentials_dir, "#{@name.to_s}.yml")
+      FileUtils.touch(filepath)
 
-    def initialize(credentials)
-      @credentials = credentials
+      YAML.load_file(filepath)
     end
 
-    def validate_credentials
-      return false if !@credentials
-      shape = self.class.creds_schema
+    def friendly_name
+      PROVIDERS[@name][:friendly_name]
+    end
 
-      (shape.keys - @credentials.keys).empty? && @credentials.all? do |k, v|
-        shape[k] === v
-      end
+    def name
+      @name.to_s
+    end
+
+    def initialize(name)
+      raise "Invalid provider" unless PROVIDERS.keys.include?(name)
+      @name = name
     end
   end
 end

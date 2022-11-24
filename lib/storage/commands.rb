@@ -24,6 +24,7 @@
 # For more information on Flight Storage, please visit:
 # https://github.com/openflighthpc/flight-storage
 #==============================================================================
+require_relative 'commands/avail'
 require_relative 'commands/configure'
 require_relative 'commands/delete'
 require_relative 'commands/list'

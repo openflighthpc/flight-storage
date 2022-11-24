@@ -26,7 +26,7 @@
 #==============================================================================
 require 'ostruct'
 
-require_relative 'client_factory'
+require_relative 'provider'
 require_relative 'config'
 
 module Storage
@@ -50,9 +50,8 @@ module Storage
     private
 
     def client
-      provider = Config.provider
-      creds = Config.credentials
-      @client ||= ClientFactory.for(provider, credentials: creds)
+      provider = Provider.new(Config.provider.to_sym)
+      @client ||= provider.client
     end
   end
 end

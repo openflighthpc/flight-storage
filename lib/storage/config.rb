@@ -98,19 +98,6 @@ module Storage
         provider.downcase.to_sym
       end
 
-      def credentials
-        FileUtils.touch(credentials_file)
-
-        YAML.load_file(credentials_file)
-      end
-
-      def credentials_file
-        file = File.join(credentials_dir, "#{provider.to_s}.yml")
-        FileUtils.touch(file)
-
-        @credentials_file ||= file
-      end
-
       def credentials_dir
         # Expands to $HOME/.config/flight/credentials
         dir = storage_path.join('credentials').expand_path(xdg_config.home)
