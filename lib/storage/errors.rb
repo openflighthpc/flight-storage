@@ -76,4 +76,11 @@ module Storage
       super(msg)
     end
   end
+  
+  class InsufficientSpaceError < StandardError
+    def initialize(path, pretty_size, pretty_remaining)
+      msg = "The file '#{path}' (#{pretty_size}) exceeds the #{pretty_remaining} of space remaining for this provider."
+      super(msg)
+    end
+  end
 end
