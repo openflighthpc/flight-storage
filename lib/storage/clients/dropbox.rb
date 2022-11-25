@@ -105,6 +105,17 @@ module Storage
       end
     end
     
+    def mkdir(path, make_parents)
+      begin
+        if !make_parents
+          dir_tree.dig(*path.split("/")[0..-2])
+        end
+        client.create_folder(path[0..-2])
+      rescue DropboxApi::Errors::FolderConflictError
+        raise ResourceExistsError, path
+      end
+    end
+    
     def to_hash(prefix)
 
       children = client.list_folder(prefix).entries
