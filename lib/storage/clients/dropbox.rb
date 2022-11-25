@@ -108,7 +108,7 @@ module Storage
     def mkdir(path, make_parents)
       begin
         if !make_parents
-          dir_tree.dig(*path.split("/")[0..-2])
+          dir_tree.dig(*path[1..-1].split("/")[0..-2])
         end
         client.create_folder(path[0..-2])
       rescue DropboxApi::Errors::FolderConflictError
