@@ -116,6 +116,17 @@ module Storage
       end
     end
     
+    def rmdir(path, recursive)
+      dirs = path[1..-1].split("/")
+      subtree = dir_tree.dig(*dirs)
+      
+      if recursive || subtree.to_hash[dirs.last].empty?
+        client.delete(path[0..-2])
+      else
+        raise DirectoryNotEmptyError, path
+      end
+    end
+    
     def to_hash(prefix)
 
       children = client.list_folder(prefix).entries
