@@ -84,9 +84,16 @@ module Storage
       if dir_tree.file_exists?(dest)
         raise ResourceExistsError, dest
       end
-      
-      File.open(source) do |file|
-        client.upload_by_chunks(dest, file, {mute: true})
+      if used_space + File.size(source) <= allocated_space
+        File.open(source) do |file|
+          client.upload_by_chunks(dest, file, {mute: true})
+        end
+      else
+        raise InsufficientSpaceError.new(
+                source, 
+                pretty_filesize(File.size(source)),
+                pretty_filesize(allocated_space - used_space)
+                )
       end
     end
     
@@ -107,7 +114,7 @@ module Storage
           if child.is_a?(TYPES[:file])
             a << child.name
           elsif child.is_a?(TYPES[:directory])
-            a << {child.name => to_hash("/" + child.name)}
+            a << {child.name => to_hash(prefix + "/" + child.name)}
           end
         end
       end
@@ -124,6 +131,14 @@ module Storage
         raise InvalidCredentialsError, FRIENDLY_NAME
       end
       @client
+    end
+    
+    def allocated_space
+      client.get_space_usage.to_hash["allocation"]["allocated"].to_i
+    end
+    
+    def used_space
+      client.get_space_usage.to_hash["used"].to_i
     end
     
     def filesize(src)
