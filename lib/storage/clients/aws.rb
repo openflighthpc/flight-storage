@@ -132,17 +132,12 @@ module Storage
       path = path.delete_prefix("/")
       if resource.bucket(@credentials[:bucket_name]).object(path).exists?
         objs = resource.bucket(@credentials[:bucket_name]).objects({prefix: path})
-        if recursive
+        dirs = path.split("/")
+        if recursive || dir_tree.dig(*dirs).to_hash[dirs.last].empty?
           objs.batch_delete!
           true
         else
-          dirs = path.split("/")
-          if dir_tree.dig(*dirs).to_hash[dirs.last].empty?
-            objs.batch_delete!
-            true
-          else
-            raise DirectoryNotEmptyError, path
-          end
+          raise DirectoryNotEmptyError, path
         end
       else
         raise ResourceNotFoundError, path
