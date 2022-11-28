@@ -40,21 +40,27 @@ module Storage
         valid_args = valid_args.map { |a| a&.gsub(%r{/+}, "/") }
 
         source = File.expand_path(valid_args[0])
-        dest_file = File.basename(source)
+        dest_name = File.basename(source)
 
         if valid_args[1] == nil
-          # Push to root dir
-          dest_dir = '/'
-          destination = File.join(dest_dir, dest_file)
+          destination = File.join("/", dest_name)
         else
-          destination = File.join(valid_args[1], dest_file)
+          destination = File.join(valid_args[1], dest_name)
         end
-
-        if !File.file?(source)
-          raise LocalResourceNotFoundError.new(source)
+        
+        if @options.recursive # Pushing a directory
+          if !File.directory?(source)
+            raise LocalResourceNotFoundError, source
+          end
+          
+          filesize = "~" + client.pretty_filesize(`du -bs #{source} | awk '{ print $1 }'`.to_i)
+        else # Pushing a file
+          if !File.file?(source)
+            raise LocalResourceNotFoundError.new(source)
+          end
+          
+          filesize = client.pretty_filesize(File.size(source))
         end
-
-        filesize = client.pretty_filesize(File.size(source))
         puts "Uploading #{File.basename(source)} (#{filesize})"
         
         resource = client.push(source, destination, @options.recursive)
