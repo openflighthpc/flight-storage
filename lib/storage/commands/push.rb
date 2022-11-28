@@ -32,6 +32,8 @@ module Storage
       def run
         # ARGS
         # [ source_file, destination ]
+        # OPTS
+        # [ recursive ]
 
         valid_args = args.dup
         valid_args[1] = valid_args[1].dup&.prepend("/")
@@ -55,7 +57,7 @@ module Storage
         filesize = client.pretty_filesize(File.size(source))
         puts "Uploading #{File.basename(source)} (#{filesize})"
         
-        resource = client.push(source, destination)
+        resource = client.push(source, destination, @options.recursive)
 
         if resource
           puts "Resource '#{source}' uploaded to '#{destination}'"

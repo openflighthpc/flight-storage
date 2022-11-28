@@ -94,6 +94,7 @@ module Storage
       to the root directory of the cloud storage.
 
       EOF
+      c.option "-r", "--recursive", "Upload the given directory and all contents"
     end
     alias_command :upload, :push
     
