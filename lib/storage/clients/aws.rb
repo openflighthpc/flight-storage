@@ -140,13 +140,13 @@ module Storage
         true
       else
         parent = path.split("/")[0..-2].join("/") + "/"
-        if parent = "/" || exists?(parent)
+        if parent == "/" || exists?(parent)
           client.put_object(
             bucket: @credentials[:bucket_name],
             key: path
           )
         else
-          raise ResourceNotFoundError, path
+          raise ResourceNotFoundError, parent
         end
       end
     end
