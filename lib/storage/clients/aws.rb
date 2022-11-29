@@ -58,11 +58,11 @@ module Storage
     end
     
     def dir_tree
-      @dir_tree ||= Tree.new("/", self.to_hash("")[nil])
+      Tree.new("/", self.to_hash("")[nil])
     end
     
     def pull(source, dest)
-      if dir_tree.file_exists?(source)
+      if exists?(source)
         source = source.delete_prefix("/")
         
         resp = client.get_object(
@@ -78,14 +78,15 @@ module Storage
     
     def push(source, dest)
       dest = dest.delete_prefix("/")
-      if dir_tree.file_exists?(dest)
+      if exists?(dest)
         raise ResourceExistsError, dest
       end
       
       obj = Aws::S3::Object.new(
               bucket_name: @credentials[:bucket_name],
               key: dest,
-              :client => client)
+              :client => client
+            )
               
       obj.upload_stream({part_size: 100 * 1024 * 1024, tempfile: true}) do |write_stream|
         IO.copy_stream(File.open(source, "rb"), write_stream)
@@ -94,7 +95,7 @@ module Storage
     
     def delete(path)
       path = path.delete_prefix("/")
-      if dir_tree.file_exists?(path)
+      if exists?(path)
         client.delete_object(
           bucket: @credentials[:bucket_name],
           key: path
@@ -106,7 +107,7 @@ module Storage
     
     def mkdir(path, make_parents)
       path = path.delete_prefix("/")
-      if resource.bucket(@credentials[:bucket_name]).object(path).exists?
+      if exists?(path)
         raise ResourceExistsError, path
       elsif make_parents
         dirs = path.split("/")
@@ -120,17 +121,21 @@ module Storage
         end
         true
       else
-        dir_tree.dig(*path.split("/")[0..-2])
-        client.put_object(
-          bucket: @credentials[:bucket_name],
-          key: path
-        )
+        parent = path.split("/")[0..-2].join("/") + "/"
+        if parent = "/" || exists?(parent)
+          client.put_object(
+            bucket: @credentials[:bucket_name],
+            key: path
+          )
+        else
+          raise ResourceNotFoundError, path
+        end
       end
     end
     
     def rmdir(path, recursive)
       path = path.delete_prefix("/")
-      if resource.bucket(@credentials[:bucket_name]).object(path).exists?
+      if exists?(path)
         objs = resource.bucket(@credentials[:bucket_name]).objects({prefix: path})
         dirs = path.split("/")
         if recursive || dir_tree.dig(*dirs).to_hash[dirs.last].empty?
@@ -209,6 +214,10 @@ module Storage
         raise "Failed to connect to AWS. Check that your region is correctly configured and that you have a stable network connection."
       end
       @client
+    end
+    
+    def exists?(key)
+      resource.bucket(@credentials[:bucket_name]).object(key).exists?
     end
     
     def resource
