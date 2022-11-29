@@ -76,7 +76,25 @@ module Storage
       dest
     end
     
-    def push(source, dest)
+    def push(source, dest, recursive)
+      if recursive
+        mkdir(dest + "/", false)
+        Dir.entries(source).each do |name|
+          if name[0] != "."
+            full_name = source + "/" + name
+            if File.directory?(full_name)
+              push(full_name, dest + "/" + name, true)
+            elsif File.file?(full_name)
+              push_file(full_name, dest + "/" + name)
+            end
+          end
+        end
+      else
+        push_file(source, dest)
+      end
+    end
+    
+    def push_file(source, dest)
       dest = dest.delete_prefix("/")
       if exists?(dest)
         raise ResourceExistsError, dest
