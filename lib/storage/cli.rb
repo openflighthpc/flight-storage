@@ -94,7 +94,7 @@ module Storage
       to the root directory of the cloud storage.
 
       EOF
-      c.option "-r", "--recursive", "Upload the given directory and all contents"
+      c.option "-r", "--recursive", "Upload a given directory and all contents"
     end
     alias_command :upload, :push
     
@@ -107,6 +107,7 @@ module Storage
       If no destination path is given at DEST, the file is pulled
       to the current working directory.
       EOF
+      c.option "-r", "--recursive", "Download a given directory and all contents"
     end
     alias_command :download, :pull
     

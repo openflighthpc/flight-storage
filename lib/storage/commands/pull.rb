@@ -31,35 +31,37 @@ module Storage
     class Pull < Command
       def run
         # ARGS
-        # [ source_file, destination ]
+        # [ source, destination ]
+        # OPTS
+        # [ recursive ]
 
         valid_args = args.dup
         valid_args[0] = valid_args[0].dup.prepend("/")
         valid_args = valid_args.map { |a| a&.gsub(%r{/+}, "/") }
 
         source = valid_args[0]
-        dest_file = File.basename(source)
+        dest_name = File.basename(source)
 
         if valid_args[1] == nil
-          # Pull to current directory
-          dest_dir = Dir.pwd
-          destination = File.join(dest_dir, dest_file)
+          destination = File.join(Dir.pwd, dest_name)
         else
-          destination = File.join(File.expand_path(valid_args[1]), dest_file)
+          destination = File.join(File.expand_path(valid_args[1]), dest_name)
         end
 
-        if File.file?(destination)
-          raise LocalResourceExistsError.new(destination)
+        if File.file?(destination) && !@options.recursive
+          raise LocalResourceExistsError, destination
+        elsif File.directory?(destination) && @options.recursive
+          raise LocalREsourceExistsError, destination
         end
 
         filesize = client.filesize(source)
-        puts "Downloading #{dest_file} (#{filesize})..."
+        puts "Downloading #{dest_name} (#{filesize})..."
 
-        resource = client.pull(source, destination)
+        #resource = client.pull(source, destination, @options.recursive)
 
-        if resource
-          puts "Resource '#{source}' saved to '#{resource}'"
-        end
+        #if resource
+        #  puts "Resource '#{source}' saved to '#{resource}'"
+        #end
       end
     end
   end
