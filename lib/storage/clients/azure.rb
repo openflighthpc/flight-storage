@@ -52,6 +52,24 @@ module Storage
       pretty_filesize(get_file_properties(src)[:content_length])
     end
 
+    def mkdir(path, parents: false)
+      dig = path.split("/")[1..]
+      target = dig.pop
+
+      if parents
+        dig.inject('') do |prev, par|
+          create_directory(par)
+          File.join(prev, par)
+        end
+      end
+
+      if !query_directory(dig)
+        raise ResourceNotFoundError.new("/#{dig.join('/')}")
+      end
+
+      create_directory(path)
+    end
+
     def delete(file)
       delete_file(file)
     end
@@ -137,6 +155,17 @@ module Storage
     end
 
     private
+
+    def directory_exists?(directory)
+      !!client.get_directory_properties(file_share_name, directory)
+    rescue Azure::Core::Http::HTTPError => e
+      false
+    end
+
+    def create_directory(path)
+      return if directory_exists?(path)
+      client.create_directory(file_share_name, path)
+    end
 
     def split_path(src)
       path = src.split('/')
