@@ -51,17 +51,17 @@ module Storage
         if File.file?(destination) && !@options.recursive
           raise LocalResourceExistsError, destination
         elsif File.directory?(destination) && @options.recursive
-          raise LocalREsourceExistsError, destination
+          raise LocalResourceExistsError, destination
         end
 
         filesize = client.filesize(source)
         puts "Downloading #{dest_name} (#{filesize})..."
 
-        #resource = client.pull(source, destination, @options.recursive)
+        resource = client.pull(source, destination, @options.recursive)
 
-        #if resource
-        #  puts "Resource '#{source}' saved to '#{resource}'"
-        #end
+        if resource
+          puts "Resource '#{source}' saved to '#{resource}'"
+        end
       end
     end
   end
