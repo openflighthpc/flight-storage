@@ -52,6 +52,47 @@ module Storage
       pretty_filesize(get_file_properties(src)[:content_length])
     end
 
+    def mkdir(path, parents: false)
+      dig = path.split("/")[1..]
+      target = dig.pop
+
+      if parents
+        dig.inject('') do |prev, par|
+          create_directory(par)
+          File.join(prev, par)
+        end
+      end
+
+      if !query_directory(dig)
+        raise ResourceNotFoundError.new("/#{dig.join('/')}")
+      end
+
+      create_directory(path)
+    end
+
+    def rmdir(path, recursive: false)
+      # Azure doesn't support recursive directory deletion,
+      # so we have to do it ourselves.
+      if recursive
+        contents = query_directory(path)
+
+        contents.each do |c|
+          subpath = File.join(path, c.name)
+          if c.is_a?(TYPES[:file])
+            delete_file(subpath)
+          elsif c.is_a?(TYPES[:directory])
+            rmdir(subpath, recursive: true)
+          end
+        end
+
+        delete_directory(path)
+      else
+        delete_directory(path)
+      end
+
+      return path
+    end
+
     def delete(file)
       delete_file(file)
     end
@@ -138,6 +179,27 @@ module Storage
 
     private
 
+    def delete_directory(path)
+      client.delete_directory(file_share_name, path)
+    rescue Azure::Core::Http::HTTPError => e
+      if e.message.include?("directory is not empty")
+        raise DirectoryNotEmptyError.new(path)
+      else
+        raise e
+      end
+    end
+
+    def directory_exists?(directory)
+      !!client.get_directory_properties(file_share_name, directory)
+    rescue Azure::Core::Http::HTTPError => e
+      false
+    end
+
+    def create_directory(path)
+      return if directory_exists?(path)
+      client.create_directory(file_share_name, path)
+    end
+
     def split_path(src)
       path = src.split('/')
       dir = path.length == 1 ? '' : path[..-2].join('/')
@@ -172,6 +234,8 @@ module Storage
     rescue Azure::Core::Http::HTTPError => e
       if e.message.include?("resource does not exist")
         raise ResourceNotFoundError.new(src)
+      else
+        raise e
       end
     end
 
@@ -192,6 +256,8 @@ module Storage
     rescue Azure::Core::Http::HTTPError => e
       if e.message.include?("resource does not exist")
         raise ResourceNotFoundError.new(src)
+      else
+        raise e
       end
     end
 
@@ -275,6 +341,8 @@ module Storage
     rescue Azure::Core::Http::HTTPError => e
       if e.message.include?("resource does not exist")
         raise ResourceNotFoundError.new(directory)
+      else
+        raise e
       end
     end
 
