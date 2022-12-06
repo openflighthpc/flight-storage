@@ -44,17 +44,11 @@ module Storage
     
     def list(path="/", tree: false)
       path = path.delete_prefix("/")
-      subtree = dir_tree.dig(*path.split("/"))
-      msg = ""
       if tree
-        msg << subtree.show
+        dir_tree.dig(*path.split("/")).show
       else
-        subtree.subdirs.each do |child|
-          msg << child.name + "/\n"
-        end
-        msg << subtree.files.join("\n")
+        directory_contents(path).join("\n")
       end
-      msg
     end
     
     def dir_tree
