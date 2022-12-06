@@ -61,7 +61,26 @@ module Storage
       Tree.new("/", self.to_hash("")[nil])
     end
     
-    def pull(source, dest)
+    def pull(source, dest, recursive)
+      source = source.delete_prefix("/")
+      raise ResourceNotFoundError, source unless exists?(source)
+      if recursive
+        Dir.mkdir(dest)
+        source = source + "/" unless source[-1] == "/"
+        directory_contents(source).each do |name|
+          if name[-1] == "/"
+            pull(source + name, dest + "/" + name, true)
+          else
+            pull_file(source + name, dest + "/" + name)
+          end
+        end
+      else
+        pull_file(source, dest)
+      end
+      dest
+    end
+    
+    def pull_file(source, dest)
       if exists?(source)
         source = source.delete_prefix("/")
         
@@ -242,9 +261,65 @@ module Storage
       @resource ||= Aws::S3::Resource.new(client: client)
     end
     
+    def directory_contents(prefix)
+      contents = []
+      
+      resp = client.list_objects_v2(
+               bucket: @credentials[:bucket_name],
+               delimiter: "/",
+               prefix: prefix
+             )
+      
+      dirs = resp.common_prefixes.map {|dir| dir = dir.prefix.split("/").last }
+      while resp.is_truncated
+        marker = resp.next_continuation_token
+        
+        resp = client.list_objects_v2(
+                 bucket: @credentials[:bucket_name],
+                 delimiter: "/",
+                 prefix: prefix,
+                 continuation_token: marker
+               )
+        
+        dirs += resp.common_prefixes.map {|dir| dir = dir.prefix.split("/").last }
+      end
+      dirs&.each do |dir|
+        contents << dir + "/"
+      end
+      
+      files = resource.bucket(@credentials[:bucket_name]).objects(
+                delimiter: "/",
+                prefix: prefix,
+                start_after: prefix
+              )
+      
+      files.collect(&:key)&.each do |file|
+        contents << file.split("/").last
+      end
+      contents
+    end
+    
     def filesize(src)
       src = src.delete_prefix("/")
-      pretty_filesize(client.head_object(bucket: @credentials[:bucket_name], key: src)[:content_length])
+      
+      resp = client.list_objects_v2(
+        bucket: @credentials[:bucket_name],
+        prefix: src
+      )
+      
+      total = resp.contents.map { |o| o.size }.sum
+      while resp.is_truncated
+        marker = resp.next_continuation_token
+        
+        resp = client.list_objects_v2(
+                 bucket: @credentials[:bucket_name],
+                 prefix: src,
+                 continuation_token: marker
+               )
+        
+        total += resp.contents.map { |o| o.size }.sum
+      end
+      pretty_filesize(total)
     end
   end
 end
