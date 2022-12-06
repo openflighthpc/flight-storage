@@ -70,6 +70,29 @@ module Storage
       create_directory(path)
     end
 
+    def rmdir(path, recursive: false)
+      # Azure doesn't support recursive directory deletion,
+      # so we have to do it ourselves.
+      if recursive
+        contents = query_directory(path)
+
+        contents.each do |c|
+          subpath = File.join(path, c.name)
+          if c.is_a?(TYPES[:file])
+            delete_file(subpath)
+          elsif c.is_a?(TYPES[:directory])
+            rmdir(subpath, recursive: true)
+          end
+        end
+
+        delete_directory(path)
+      else
+        delete_directory(path)
+      end
+
+      return path
+    end
+
     def delete(file)
       delete_file(file)
     end
@@ -156,6 +179,16 @@ module Storage
 
     private
 
+    def delete_directory(path)
+      client.delete_directory(file_share_name, path)
+    rescue Azure::Core::Http::HTTPError => e
+      if e.message.include?("directory is not empty")
+        raise DirectoryNotEmptyError.new(path)
+      else
+        raise e
+      end
+    end
+
     def directory_exists?(directory)
       !!client.get_directory_properties(file_share_name, directory)
     rescue Azure::Core::Http::HTTPError => e
@@ -201,6 +234,8 @@ module Storage
     rescue Azure::Core::Http::HTTPError => e
       if e.message.include?("resource does not exist")
         raise ResourceNotFoundError.new(src)
+      else
+        raise e
       end
     end
 
@@ -221,6 +256,8 @@ module Storage
     rescue Azure::Core::Http::HTTPError => e
       if e.message.include?("resource does not exist")
         raise ResourceNotFoundError.new(src)
+      else
+        raise e
       end
     end
 
@@ -304,6 +341,8 @@ module Storage
     rescue Azure::Core::Http::HTTPError => e
       if e.message.include?("resource does not exist")
         raise ResourceNotFoundError.new(directory)
+      else
+        raise e
       end
     end
 
