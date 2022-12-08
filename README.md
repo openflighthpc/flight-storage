@@ -32,6 +32,7 @@ Flight Storage currently supports the following cloud storage providers:
 
 - Amazon S3 ([setup](docs/aws_s3.md))
 - Azure File Service ([setup](docs/azure.md))
+- Dropbox ([setup](docs/dropbox.md))
 
 Please follow the setup guide for your chosen provider.
 

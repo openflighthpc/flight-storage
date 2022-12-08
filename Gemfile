@@ -39,3 +39,6 @@ gem 'azure-storage-file'
 
 # AWS provider gems
 gem 'aws-sdk-s3'
+
+# Dropbox provider gems
+gem 'dropbox_api'
